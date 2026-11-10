@@ -90,7 +90,7 @@ BEGIN
     END IF;
 
 
-    -- --------------------------------------------------------
+       -- --------------------------------------------------------
     -- 2. VALIDAR USUARIO Y PERMISOS
     -- --------------------------------------------------------
 
@@ -99,11 +99,18 @@ BEGIN
     FROM core.usuarios u
     WHERE u.usuario_id = p_usuario_id
       AND u.activo = TRUE
-      AND u.rol_id IN (1, 4)
+      AND EXISTS (
+          SELECT 1
+          FROM core.roles r
+          WHERE r.rol_id = u.rol_id
+            AND UPPER(r.nombre) IN ('ADMINISTRADOR', 'GERENTE')
+            AND r.activo = TRUE
+      )
     FOR SHARE;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Usuario inexistente, inactivo o sin permisos para devolver.';
+        RAISE EXCEPTION
+            'Usuario inexistente, inactivo o sin permisos para devolver.';
     END IF;
 
 
