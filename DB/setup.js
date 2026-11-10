@@ -1,3 +1,4 @@
+
 const { Client } = require('pg');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -47,7 +48,11 @@ function validarConfiguracion() {
         throw new Error('El nombre de la base de datos no es válido.');
     }
 
-    if (!Number.isInteger(config.port) || config.port < 1 || config.port > 65535) {
+    if (
+        !Number.isInteger(config.port) ||
+        config.port < 1 ||
+        config.port > 65535
+    ) {
         throw new Error('El puerto de PostgreSQL no es válido.');
     }
 }
@@ -224,7 +229,7 @@ async function ejecutarEsquema(client) {
         client,
         carpetaSchema,
         0,
-        16,
+        17,
         'Creación del esquema'
     );
 }
@@ -272,7 +277,7 @@ async function iniciarConfiguracion() {
 
         console.log('\nConexión con la base de datos establecida.');
 
-        // Crear tablas, relaciones y restricciones
+        // Crear tablas, relaciones, restricciones y funciones
         await ejecutarEsquema(clientBaseDatos);
 
         // Insertar datos iniciales y de prueba

@@ -11,7 +11,6 @@
 -- No se modifica el inventario.
 -- ============================================================
 
-BEGIN;
 
 CREATE OR REPLACE FUNCTION core.procesar_devolucion(
     p_venta_id BIGINT,
@@ -505,5 +504,3 @@ BEGIN
 
 END;
 $$;
-
-COMMIT;
