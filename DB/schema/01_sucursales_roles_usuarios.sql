@@ -1,10 +1,9 @@
-
 -- ============================================
 -- PROYECTO: RESTAURANTE ORIGENES SV
 -- TABLA: SUCURSALES
 -- ============================================
 
-CREATE TABLE core.sucursales (
+CREATE TABLE IF NOT EXISTS core.sucursales (
     sucursal_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     nombre VARCHAR(100) NOT NULL,
@@ -23,7 +22,7 @@ CREATE TABLE core.sucursales (
 -- TABLA: ROLES
 -- ============================================
 
-CREATE TABLE core.roles (
+CREATE TABLE IF NOT EXISTS core.roles (
     rol_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     nombre VARCHAR(50) NOT NULL UNIQUE,
@@ -38,7 +37,7 @@ CREATE TABLE core.roles (
 -- TABLA: USUARIOS
 -- ============================================
 
-CREATE TABLE core.usuarios (
+CREATE TABLE IF NOT EXISTS core.usuarios (
     usuario_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     sucursal_id BIGINT NOT NULL,

@@ -1,11 +1,10 @@
-
 -- ==========================================
 -- 09 - PROVEEDORES Y COMPRAS
 -- Restaurante Origenes SV
 -- ==========================================
 
 -- 1. Proveedores
-CREATE TABLE core.proveedores (
+CREATE TABLE IF NOT EXISTS core.proveedores (
     proveedor_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     nombre VARCHAR(150) NOT NULL,
@@ -19,11 +18,13 @@ CREATE TABLE core.proveedores (
     fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_proveedores_nombre
+
+CREATE INDEX IF NOT EXISTS idx_proveedores_nombre
     ON core.proveedores(nombre);
 
+
 -- 2. Compras
-CREATE TABLE core.compras (
+CREATE TABLE IF NOT EXISTS core.compras (
     compra_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     proveedor_id BIGINT NOT NULL,
@@ -75,17 +76,19 @@ CREATE TABLE core.compras (
     )
 );
 
-CREATE INDEX idx_compras_fecha
+
+CREATE INDEX IF NOT EXISTS idx_compras_fecha
     ON core.compras(fecha_compra);
 
-CREATE INDEX idx_compras_proveedor
+CREATE INDEX IF NOT EXISTS idx_compras_proveedor
     ON core.compras(proveedor_id);
 
-CREATE INDEX idx_compras_sucursal
+CREATE INDEX IF NOT EXISTS idx_compras_sucursal
     ON core.compras(sucursal_id);
 
+
 -- 3. Detalle de compras
-CREATE TABLE core.detalle_compras (
+CREATE TABLE IF NOT EXISTS core.detalle_compras (
     detalle_compra_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     compra_id BIGINT NOT NULL,
@@ -128,11 +131,12 @@ CREATE TABLE core.detalle_compras (
         )
 );
 
-CREATE INDEX idx_detalle_compras_compra
+
+CREATE INDEX IF NOT EXISTS idx_detalle_compras_compra
     ON core.detalle_compras(compra_id);
 
-CREATE INDEX idx_detalle_compras_ingrediente
+CREATE INDEX IF NOT EXISTS idx_detalle_compras_ingrediente
     ON core.detalle_compras(ingrediente_id);
 
-CREATE INDEX idx_detalle_compras_producto
+CREATE INDEX IF NOT EXISTS idx_detalle_compras_producto
     ON core.detalle_compras(producto_id);

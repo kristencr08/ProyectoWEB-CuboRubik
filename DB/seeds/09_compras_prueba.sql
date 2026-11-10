@@ -1,5 +1,8 @@
 
-BEGIN;
+-- ==========================================
+-- 09 - COMPRA DE PRUEBA
+-- Restaurante Origenes SV
+-- ==========================================
 
 DO $$
 DECLARE
@@ -10,7 +13,8 @@ DECLARE
     v_queso_id INTEGER;
     v_compra_id INTEGER;
 BEGIN
-    -- Buscar los registros necesarios
+    -- 1. BUSCAR LOS REGISTROS NECESARIOS
+
     SELECT proveedor_id INTO v_proveedor_id
     FROM core.proveedores
     WHERE nombre = 'Distribuidora de Alimentos SV'
@@ -34,19 +38,39 @@ BEGIN
     FROM core.ingredientes
     WHERE codigo = 'ING-002';
 
+    -- 2. VALIDAR QUE EXISTAN LOS REGISTROS
+
     IF v_proveedor_id IS NULL OR v_sucursal_id IS NULL
        OR v_usuario_id IS NULL OR v_masa_id IS NULL
        OR v_queso_id IS NULL THEN
-        RAISE EXCEPTION 'No se encontraron todos los registros necesarios para la compra.';
+        RAISE EXCEPTION
+            'No se encontraron todos los registros necesarios para la compra.';
     END IF;
 
-    -- Crear la compra solo si todavía no existe
+    -- 3. VALIDAR QUE EL USUARIO PERTENEZCA A LA SUCURSAL
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM core.usuarios
+        WHERE usuario_id = v_usuario_id
+          AND sucursal_id = v_sucursal_id
+    ) THEN
+        RAISE EXCEPTION
+            'El usuario no pertenece a la sucursal de la compra.';
+    END IF;
+
+    -- 4. BUSCAR SI LA COMPRA YA EXISTE
+
     SELECT compra_id INTO v_compra_id
     FROM core.compras
-    WHERE numero_documento = 'COMP-PRUEBA-001'
+    WHERE proveedor_id = v_proveedor_id
+      AND numero_documento = 'COMP-PRUEBA-001'
     LIMIT 1;
 
+    -- 5. CREAR LA COMPRA SOLO SI NO EXISTE
+
     IF v_compra_id IS NULL THEN
+
         INSERT INTO core.compras (
             proveedor_id,
             sucursal_id,
@@ -71,28 +95,42 @@ BEGIN
         )
         RETURNING compra_id INTO v_compra_id;
 
-        -- Detalle: masa de maíz
+        -- DETALLE: MASA DE MAIZ
+
         INSERT INTO core.detalle_compras (
-            compra_id, ingrediente_id, cantidad,
-            costo_unitario, subtotal_linea
+            compra_id,
+            ingrediente_id,
+            cantidad,
+            costo_unitario,
+            subtotal_linea
         )
         VALUES (
-            v_compra_id, v_masa_id, 2.000,
-            1.50, 3.00
+            v_compra_id,
+            v_masa_id,
+            2.000,
+            1.50,
+            3.00
         );
 
-        -- Detalle: queso
+        -- DETALLE: QUESO
+
         INSERT INTO core.detalle_compras (
-            compra_id, ingrediente_id, cantidad,
-            costo_unitario, subtotal_linea
+            compra_id,
+            ingrediente_id,
+            cantidad,
+            costo_unitario,
+            subtotal_linea
         )
         VALUES (
-            v_compra_id, v_queso_id, 5.000,
-            4.00, 20.00
+            v_compra_id,
+            v_queso_id,
+            5.000,
+            4.00,
+            20.00
         );
+
     END IF;
 
     RAISE NOTICE 'Compra de prueba registrada. ID: %', v_compra_id;
-END $$;
 
-COMMIT;
+END $$;

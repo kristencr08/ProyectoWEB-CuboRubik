@@ -1,10 +1,9 @@
-
 -- ============================================
 -- PROYECTO: RESTAURANTE ORIGENES SV
 -- TABLA: CLIENTES
 -- ============================================
 
-CREATE TABLE core.clientes (
+CREATE TABLE IF NOT EXISTS core.clientes (
 
     -- Identificador unico del cliente
     cliente_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -24,6 +23,10 @@ CREATE TABLE core.clientes (
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- Indice para facilitar busquedas por nombre
-CREATE INDEX idx_clientes_nombre
+
+-- ============================================
+-- INDICE PARA BUSQUEDAS POR NOMBRE
+-- ============================================
+
+CREATE INDEX IF NOT EXISTS idx_clientes_nombre
 ON core.clientes(nombre);

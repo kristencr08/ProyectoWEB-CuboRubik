@@ -1,12 +1,19 @@
-
 const { Client } = require('pg');
 const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs/promises');
 
+// ==========================================
+// CARGAR VARIABLES DE ENTORNO
+// ==========================================
+
 dotenv.config({
     path: path.resolve(__dirname, '../.env')
 });
+
+// ==========================================
+// CONFIGURACIÓN DE POSTGRESQL
+// ==========================================
 
 const config = {
     host: process.env.DB_HOST,
@@ -17,12 +24,18 @@ const config = {
 
 const nombreBaseDatos = process.env.DB_NAME;
 
+// ==========================================
+// VALIDAR CONFIGURACIÓN
+// ==========================================
+
 function validarConfiguracion() {
     const faltantes = Object.entries(config)
         .filter(([clave, valor]) => !valor)
         .map(([clave]) => clave);
 
-    if (!nombreBaseDatos) faltantes.push('DB_NAME');
+    if (!nombreBaseDatos) {
+        faltantes.push('DB_NAME');
+    }
 
     if (faltantes.length > 0) {
         throw new Error(
@@ -33,7 +46,15 @@ function validarConfiguracion() {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(nombreBaseDatos)) {
         throw new Error('El nombre de la base de datos no es válido.');
     }
+
+    if (!Number.isInteger(config.port) || config.port < 1 || config.port > 65535) {
+        throw new Error('El puerto de PostgreSQL no es válido.');
+    }
 }
+
+// ==========================================
+// CONECTAR CON POSTGRESQL
+// ==========================================
 
 async function conectarPostgreSQL(baseDatos = 'postgres') {
     const client = new Client({
@@ -43,8 +64,13 @@ async function conectarPostgreSQL(baseDatos = 'postgres') {
     });
 
     await client.connect();
+
     return client;
 }
+
+// ==========================================
+// VERIFICAR SI EXISTE LA BASE DE DATOS
+// ==========================================
 
 async function verificarBaseDatos(client) {
     const resultado = await client.query(
@@ -54,6 +80,10 @@ async function verificarBaseDatos(client) {
 
     return resultado.rowCount > 0;
 }
+
+// ==========================================
+// CREAR BASE DE DATOS
+// ==========================================
 
 async function crearBaseDatos(client) {
     const existe = await verificarBaseDatos(client);
@@ -70,20 +100,29 @@ async function crearBaseDatos(client) {
     console.log('Base de datos creada correctamente.');
 }
 
-// Obtener los archivos SQL del esquema en orden numérico
-async function obtenerArchivosSQL() {
-    const carpetaSchema = path.join(__dirname, 'schema');
+// ==========================================
+// OBTENER ARCHIVOS SQL EN ORDEN
+// ==========================================
 
-    const archivos = await fs.readdir(carpetaSchema);
+async function obtenerArchivosSQL(
+    carpeta,
+    numeroInicial,
+    numeroFinal,
+    descripcion
+) {
+    const archivos = await fs.readdir(carpeta);
 
-    return archivos
+    const archivosSQL = archivos
         .filter(archivo => {
-            const coincide = archivo.match(/^(\d{2})_.*\.sql$/);
-            if (!coincide) return false;
+            const coincide = archivo.match(/^(\d{2})_.*\.sql$/i);
+
+            if (!coincide) {
+                return false;
+            }
 
             const numero = Number(coincide[1]);
 
-            return numero >= 0 && numero <= 16;
+            return numero >= numeroInicial && numero <= numeroFinal;
         })
         .sort((a, b) => {
             const numeroA = Number(a.match(/^(\d{2})/)[1]);
@@ -91,47 +130,124 @@ async function obtenerArchivosSQL() {
 
             return numeroA - numeroB;
         });
-}
 
-// Ejecutar los archivos SQL completos
-async function ejecutarEsquema(client) {
-    const carpetaSchema = path.join(__dirname, 'schema');
-    const archivos = await obtenerArchivosSQL();
+    const numerosEncontrados = archivosSQL.map(archivo =>
+        Number(archivo.match(/^(\d{2})/)[1])
+    );
 
-    if (archivos.length !== 17) {
+    const cantidadEsperada = numeroFinal - numeroInicial + 1;
+
+    const secuenciaCompleta = Array.from(
+        { length: cantidadEsperada },
+        (_, i) => numeroInicial + i
+    );
+
+    const faltantes = secuenciaCompleta.filter(
+        numero => !numerosEncontrados.includes(numero)
+    );
+
+    if (
+        archivosSQL.length !== cantidadEsperada ||
+        faltantes.length > 0
+    ) {
         throw new Error(
-            `Se esperaban 17 archivos SQL (00-16), pero se encontraron ${archivos.length}.`
+            `Se esperaban ${cantidadEsperada} archivos SQL para ${descripcion}. ` +
+            `Encontrados: ${archivosSQL.length}. ` +
+            `Faltantes: ${faltantes.join(', ') || 'ninguno'}.`
         );
     }
 
-    console.log('\nIniciando creación del esquema...');
+    return archivosSQL;
+}
+
+// ==========================================
+// EJECUTAR ARCHIVOS SQL
+// ==========================================
+
+async function ejecutarArchivosSQL(
+    client,
+    carpeta,
+    numeroInicial,
+    numeroFinal,
+    descripcion
+) {
+    const archivos = await obtenerArchivosSQL(
+        carpeta,
+        numeroInicial,
+        numeroFinal,
+        descripcion
+    );
+
+    console.log('\n====================================');
+    console.log(`INICIANDO: ${descripcion.toUpperCase()}`);
+    console.log('====================================');
 
     for (const archivo of archivos) {
-        const rutaArchivo = path.join(carpetaSchema, archivo);
-        const contenidoSQL = await fs.readFile(rutaArchivo, 'utf8');
+        const rutaArchivo = path.join(carpeta, archivo);
 
-        console.log(`Ejecutando: ${archivo}`);
+        const contenidoSQL = await fs.readFile(
+            rutaArchivo,
+            'utf8'
+        );
+
+        console.log(`\nEjecutando: ${archivo}`);
 
         try {
-    await client.query('BEGIN');
+            await client.query('BEGIN');
 
-    await client.query(contenidoSQL);
+            await client.query(contenidoSQL);
 
-    await client.query('COMMIT');
+            await client.query('COMMIT');
 
-    console.log(`Correcto: ${archivo}`);
+            console.log(`Correcto: ${archivo}`);
 
-} catch (error) {
-    await client.query('ROLLBACK');
+        } catch (error) {
+            await client.query('ROLLBACK').catch(() => {});
 
-    throw new Error(
-        `Error ejecutando ${archivo}: ${error.message}`
-    );
-}
+            throw new Error(
+                `Error ejecutando ${archivo}: ${error.message}`
+            );
+        }
     }
 
-    console.log('\nEsquema creado correctamente.');
+    console.log(`\n${descripcion} ejecutados correctamente.`);
 }
+
+// ==========================================
+// EJECUTAR ESQUEMA
+// ==========================================
+
+async function ejecutarEsquema(client) {
+    const carpetaSchema = path.join(__dirname, 'schema');
+
+    await ejecutarArchivosSQL(
+        client,
+        carpetaSchema,
+        0,
+        16,
+        'Creación del esquema'
+    );
+}
+
+// ==========================================
+// EJECUTAR DATOS DE PRUEBA
+// ==========================================
+
+async function ejecutarSeeds(client) {
+    const carpetaSeeds = path.join(__dirname, 'seeds');
+
+    await ejecutarArchivosSQL(
+        client,
+        carpetaSeeds,
+        1,
+        12,
+        'Carga de datos de prueba'
+    );
+}
+
+// ==========================================
+// INICIAR CONFIGURACIÓN
+// ==========================================
 
 async function iniciarConfiguracion() {
     let clientServidor;
@@ -154,13 +270,25 @@ async function iniciarConfiguracion() {
 
         clientBaseDatos = await conectarPostgreSQL(nombreBaseDatos);
 
+        console.log('\nConexión con la base de datos establecida.');
+
+        // Crear tablas, relaciones y restricciones
         await ejecutarEsquema(clientBaseDatos);
 
-        console.log('\nInstalación del esquema finalizada.');
+        // Insertar datos iniciales y de prueba
+        await ejecutarSeeds(clientBaseDatos);
+
+        console.log('\n====================================');
+        console.log(' INSTALACIÓN FINALIZADA CORRECTAMENTE');
+        console.log('====================================');
 
     } catch (error) {
-        console.error('\nError durante la instalación.');
+        console.error('\n====================================');
+        console.error(' ERROR DURANTE LA INSTALACIÓN');
+        console.error('====================================');
+
         console.error('Motivo:', error.message);
+
         process.exitCode = 1;
 
     } finally {
@@ -171,6 +299,8 @@ async function iniciarConfiguracion() {
         if (clientServidor) {
             await clientServidor.end().catch(() => {});
         }
+
+        console.log('\nConexiones PostgreSQL cerradas.');
     }
 }
 

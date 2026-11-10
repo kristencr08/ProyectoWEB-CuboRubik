@@ -1,11 +1,10 @@
-
 -- ==========================================
 -- 08 - INVENTARIO
 -- Restaurante Origenes SV
 -- ==========================================
 
 -- 1. Existencias de ingredientes por sucursal
-CREATE TABLE core.existencias_ingredientes (
+CREATE TABLE IF NOT EXISTS core.existencias_ingredientes (
     existencia_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     sucursal_id BIGINT NOT NULL,
@@ -30,8 +29,9 @@ CREATE TABLE core.existencias_ingredientes (
         CHECK (cantidad >= 0)
 );
 
+
 -- 2. Existencias de productos directos por sucursal
-CREATE TABLE core.existencias_productos (
+CREATE TABLE IF NOT EXISTS core.existencias_productos (
     existencia_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     sucursal_id BIGINT NOT NULL,
@@ -56,8 +56,9 @@ CREATE TABLE core.existencias_productos (
         CHECK (cantidad >= 0)
 );
 
+
 -- 3. Movimientos de inventario
-CREATE TABLE core.movimientos_inventario (
+CREATE TABLE IF NOT EXISTS core.movimientos_inventario (
     movimiento_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     sucursal_id BIGINT NOT NULL,
@@ -103,15 +104,17 @@ CREATE TABLE core.movimientos_inventario (
         )
 );
 
+
 -- 4. Indices
-CREATE INDEX idx_existencias_ingrediente_sucursal
+
+CREATE INDEX IF NOT EXISTS idx_existencias_ingrediente_sucursal
     ON core.existencias_ingredientes(sucursal_id);
 
-CREATE INDEX idx_existencias_producto_sucursal
+CREATE INDEX IF NOT EXISTS idx_existencias_producto_sucursal
     ON core.existencias_productos(sucursal_id);
 
-CREATE INDEX idx_movimientos_inventario_fecha
+CREATE INDEX IF NOT EXISTS idx_movimientos_inventario_fecha
     ON core.movimientos_inventario(fecha);
 
-CREATE INDEX idx_movimientos_inventario_sucursal
+CREATE INDEX IF NOT EXISTS idx_movimientos_inventario_sucursal
     ON core.movimientos_inventario(sucursal_id);

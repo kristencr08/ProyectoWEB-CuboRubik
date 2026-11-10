@@ -1,10 +1,9 @@
-
 -- ============================================
 -- PROYECTO: RESTAURANTE ORIGENES SV
 -- TABLA: VENTAS
 -- ============================================
 
-CREATE TABLE core.ventas (
+CREATE TABLE IF NOT EXISTS core.ventas (
 
     venta_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
@@ -60,12 +59,16 @@ CREATE TABLE core.ventas (
         )
 );
 
--- Indices para consultas
-CREATE INDEX idx_ventas_fecha
+
+-- ============================================
+-- INDICES PARA CONSULTAS
+-- ============================================
+
+CREATE INDEX IF NOT EXISTS idx_ventas_fecha
 ON core.ventas(fecha);
 
-CREATE INDEX idx_ventas_turno
+CREATE INDEX IF NOT EXISTS idx_ventas_turno
 ON core.ventas(turno_id);
 
-CREATE INDEX idx_ventas_usuario
+CREATE INDEX IF NOT EXISTS idx_ventas_usuario
 ON core.ventas(usuario_id);

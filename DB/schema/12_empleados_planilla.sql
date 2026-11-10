@@ -1,11 +1,10 @@
-
 -- ==========================================
 -- 12 - EMPLEADOS Y PLANILLA
 -- Restaurante Origenes SV
 -- ==========================================
 
 -- 1. Empleados
-CREATE TABLE core.empleados (
+CREATE TABLE IF NOT EXISTS core.empleados (
     empleado_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     sucursal_id BIGINT NOT NULL,
@@ -37,14 +36,16 @@ CREATE TABLE core.empleados (
         CHECK (salario_base >= 0)
 );
 
-CREATE INDEX idx_empleados_sucursal
+
+CREATE INDEX IF NOT EXISTS idx_empleados_sucursal
     ON core.empleados(sucursal_id);
 
-CREATE INDEX idx_empleados_nombre
+CREATE INDEX IF NOT EXISTS idx_empleados_nombre
     ON core.empleados(nombre);
 
+
 -- 2. Planillas
-CREATE TABLE core.planillas (
+CREATE TABLE IF NOT EXISTS core.planillas (
     planilla_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     nombre VARCHAR(100) NOT NULL,
@@ -69,8 +70,9 @@ CREATE TABLE core.planillas (
         )
 );
 
+
 -- 3. Detalle de planillas
-CREATE TABLE core.detalle_planillas (
+CREATE TABLE IF NOT EXISTS core.detalle_planillas (
     detalle_planilla_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     planilla_id BIGINT NOT NULL,
@@ -111,5 +113,6 @@ CREATE TABLE core.detalle_planillas (
         )
 );
 
-CREATE INDEX idx_detalle_planilla_empleado
+
+CREATE INDEX IF NOT EXISTS idx_detalle_planilla_empleado
     ON core.detalle_planillas(empleado_id);

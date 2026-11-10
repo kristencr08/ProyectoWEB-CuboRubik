@@ -1,5 +1,8 @@
+-- =====================================================
+-- 15 - TABLAS DE DEVOLUCIONES
+-- Restaurante Origenes SV
+-- =====================================================
 
-BEGIN;
 
 -- =====================================================
 -- 1. TABLA PRINCIPAL DE DEVOLUCIONES
@@ -58,6 +61,7 @@ CREATE TABLE IF NOT EXISTS core.devoluciones (
         CHECK (total = subtotal + iva)
 );
 
+
 -- =====================================================
 -- 2. DETALLE DE PRODUCTOS DEVUELTOS
 -- =====================================================
@@ -104,6 +108,7 @@ CREATE TABLE IF NOT EXISTS core.detalle_devoluciones (
         CHECK (total = subtotal + iva)
 );
 
+
 -- =====================================================
 -- 3. DISTRIBUCION DE LOS PAGOS DEVUELTOS
 -- =====================================================
@@ -134,5 +139,3 @@ CREATE TABLE IF NOT EXISTS core.devoluciones_pagos (
     CONSTRAINT chk_monto_devolucion_pago
         CHECK (monto > 0)
 );
-
-COMMIT;

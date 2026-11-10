@@ -1,10 +1,9 @@
-
 -- ============================================
 -- PROYECTO: RESTAURANTE ORIGENES SV
 -- TABLA: CAJAS
 -- ============================================
 
-CREATE TABLE core.cajas (
+CREATE TABLE IF NOT EXISTS core.cajas (
 
     caja_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
@@ -26,7 +25,7 @@ CREATE TABLE core.cajas (
 -- TABLA: TURNOS DE CAJA
 -- ============================================
 
-CREATE TABLE core.turnos_caja (
+CREATE TABLE IF NOT EXISTS core.turnos_caja (
 
     turno_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
@@ -85,8 +84,9 @@ CREATE TABLE core.turnos_caja (
         )
 );
 
+
 -- Impedir dos turnos abiertos en la misma caja
-CREATE UNIQUE INDEX uq_turno_abierto_por_caja
+CREATE UNIQUE INDEX IF NOT EXISTS uq_turno_abierto_por_caja
 ON core.turnos_caja(caja_id)
 WHERE fecha_cierre IS NULL;
 
@@ -95,7 +95,7 @@ WHERE fecha_cierre IS NULL;
 -- TABLA: MOVIMIENTOS DE CAJA
 -- ============================================
 
-CREATE TABLE core.movimientos_caja (
+CREATE TABLE IF NOT EXISTS core.movimientos_caja (
 
     movimiento_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
@@ -130,6 +130,7 @@ CREATE TABLE core.movimientos_caja (
         CHECK (monto > 0)
 );
 
+
 -- Indice para consultar movimientos por turno
-CREATE INDEX idx_movimientos_turno
+CREATE INDEX IF NOT EXISTS idx_movimientos_turno
 ON core.movimientos_caja(turno_id);

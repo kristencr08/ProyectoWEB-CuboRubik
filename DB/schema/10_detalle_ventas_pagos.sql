@@ -1,11 +1,10 @@
-
 -- ==========================================
 -- 10 - DETALLE DE VENTAS Y PAGOS
 -- Restaurante Origenes SV
 -- ==========================================
 
 -- 1. Detalle de ventas
-CREATE TABLE core.detalle_ventas (
+CREATE TABLE IF NOT EXISTS core.detalle_ventas (
     detalle_venta_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     venta_id BIGINT NOT NULL,
@@ -35,14 +34,16 @@ CREATE TABLE core.detalle_ventas (
         )
 );
 
-CREATE INDEX idx_detalle_ventas_venta
+
+CREATE INDEX IF NOT EXISTS idx_detalle_ventas_venta
     ON core.detalle_ventas(venta_id);
 
-CREATE INDEX idx_detalle_ventas_producto
+CREATE INDEX IF NOT EXISTS idx_detalle_ventas_producto
     ON core.detalle_ventas(producto_id);
 
+
 -- 2. Catalogo de metodos de pago
-CREATE TABLE core.metodos_pago (
+CREATE TABLE IF NOT EXISTS core.metodos_pago (
     metodo_pago_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     codigo VARCHAR(30) NOT NULL UNIQUE,
@@ -50,6 +51,7 @@ CREATE TABLE core.metodos_pago (
 
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
+
 
 -- 3. Metodos de pago iniciales
 INSERT INTO core.metodos_pago (codigo, nombre)
@@ -60,8 +62,9 @@ VALUES
     ('CHIVO_WALLET', 'Chivo Wallet')
 ON CONFLICT DO NOTHING;
 
+
 -- 4. Pagos de ventas
-CREATE TABLE core.pagos (
+CREATE TABLE IF NOT EXISTS core.pagos (
     pago_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     venta_id BIGINT NOT NULL,
@@ -85,8 +88,9 @@ CREATE TABLE core.pagos (
         CHECK (monto > 0)
 );
 
-CREATE INDEX idx_pagos_venta
+
+CREATE INDEX IF NOT EXISTS idx_pagos_venta
     ON core.pagos(venta_id);
 
-CREATE INDEX idx_pagos_metodo
+CREATE INDEX IF NOT EXISTS idx_pagos_metodo
     ON core.pagos(metodo_pago_id);

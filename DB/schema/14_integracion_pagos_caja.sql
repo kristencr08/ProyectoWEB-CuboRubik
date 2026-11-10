@@ -1,5 +1,8 @@
+-- =====================================================
+-- 14 - INTEGRACION DE PAGOS Y CAJA
+-- Restaurante Origenes SV
+-- =====================================================
 
-BEGIN;
 
 -- =====================================================
 -- 1. RELACIONAR MOVIMIENTOS DE CAJA CON LOS PAGOS
@@ -8,22 +11,27 @@ BEGIN;
 ALTER TABLE core.movimientos_caja
 ADD COLUMN IF NOT EXISTS pago_id BIGINT;
 
+
 -- =====================================================
 -- 2. EVITAR MOVIMIENTOS DUPLICADOS
 -- =====================================================
 
 DO $$
 BEGIN
+
     IF NOT EXISTS (
         SELECT 1
         FROM pg_constraint
         WHERE conname = 'uq_movimientos_caja_pago'
           AND conrelid = 'core.movimientos_caja'::regclass
     ) THEN
+
         ALTER TABLE core.movimientos_caja
         ADD CONSTRAINT uq_movimientos_caja_pago
         UNIQUE (pago_id);
+
     END IF;
+
 
     IF NOT EXISTS (
         SELECT 1
@@ -31,15 +39,19 @@ BEGIN
         WHERE conname = 'fk_movimientos_caja_pago'
           AND conrelid = 'core.movimientos_caja'::regclass
     ) THEN
+
         ALTER TABLE core.movimientos_caja
         ADD CONSTRAINT fk_movimientos_caja_pago
         FOREIGN KEY (pago_id)
         REFERENCES core.pagos(pago_id);
+
     END IF;
+
 END $$;
 
+
 -- =====================================================
--- 3. FUNCIÓN PARA REGISTRAR INGRESOS EN EFECTIVO
+-- 3. FUNCION PARA REGISTRAR INGRESOS EN EFECTIVO
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION core.registrar_ingreso_efectivo()
@@ -50,7 +62,9 @@ DECLARE
     v_turno_id BIGINT;
     v_usuario_id BIGINT;
     v_codigo VARCHAR(30);
+
 BEGIN
+
     SELECT codigo
     INTO v_codigo
     FROM core.metodos_pago
@@ -91,11 +105,13 @@ BEGIN
     END IF;
 
     RETURN NEW;
+
 END;
 $$;
 
+
 -- =====================================================
--- 4. CREAR TRIGGER AUTOMÁTICO
+-- 4. CREAR TRIGGER AUTOMATICO
 -- =====================================================
 
 DROP TRIGGER IF EXISTS trg_registrar_ingreso_efectivo
@@ -105,6 +121,7 @@ CREATE TRIGGER trg_registrar_ingreso_efectivo
 AFTER INSERT ON core.pagos
 FOR EACH ROW
 EXECUTE FUNCTION core.registrar_ingreso_efectivo();
+
 
 -- =====================================================
 -- 5. RECUPERAR PAGOS EN EFECTIVO ANTERIORES
@@ -132,5 +149,3 @@ JOIN core.metodos_pago mp
     ON mp.metodo_pago_id = p.metodo_pago_id
 WHERE mp.codigo = 'EFECTIVO'
 ON CONFLICT (pago_id) DO NOTHING;
-
-COMMIT;

@@ -6,11 +6,17 @@
 -- =====================================================
 
 WITH compra_recibida AS (
-    UPDATE core.compras
+    UPDATE core.compras c
     SET estado = 'RECIBIDA'
-    WHERE numero_documento = 'COMP-PRUEBA-001'
-      AND estado = 'PENDIENTE'
-    RETURNING compra_id, sucursal_id, usuario_id
+    WHERE c.numero_documento = 'COMP-PRUEBA-001'
+      AND c.estado = 'PENDIENTE'
+      AND EXISTS (
+          SELECT 1
+          FROM core.proveedores p
+          WHERE p.proveedor_id = c.proveedor_id
+            AND p.nombre = 'Distribuidora de Alimentos SV'
+      )
+    RETURNING c.compra_id, c.sucursal_id, c.usuario_id
 ),
 movimientos AS (
     INSERT INTO core.movimientos_inventario (
@@ -51,4 +57,3 @@ ON CONFLICT (sucursal_id, ingrediente_id)
 DO UPDATE SET
     cantidad = core.existencias_ingredientes.cantidad
                + EXCLUDED.cantidad;
-

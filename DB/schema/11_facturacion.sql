@@ -1,10 +1,9 @@
-
 -- ==========================================
 -- 11 - FACTURACION
 -- Restaurante Origenes SV
 -- ==========================================
 
-CREATE TABLE core.facturas (
+CREATE TABLE IF NOT EXISTS core.facturas (
     factura_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     venta_id BIGINT NOT NULL UNIQUE,
@@ -84,11 +83,16 @@ CREATE TABLE core.facturas (
         UNIQUE (sucursal_id, tipo_documento, serie, numero)
 );
 
-CREATE INDEX idx_facturas_fecha
+
+-- ==========================================
+-- INDICES PARA CONSULTAS
+-- ==========================================
+
+CREATE INDEX IF NOT EXISTS idx_facturas_fecha
     ON core.facturas(fecha_emision);
 
-CREATE INDEX idx_facturas_cliente
+CREATE INDEX IF NOT EXISTS idx_facturas_cliente
     ON core.facturas(cliente_id);
 
-CREATE INDEX idx_facturas_sucursal
+CREATE INDEX IF NOT EXISTS idx_facturas_sucursal
     ON core.facturas(sucursal_id);

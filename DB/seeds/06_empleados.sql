@@ -68,4 +68,5 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM core.empleados existente
     WHERE existente.documento = e.documento
+       OR existente.usuario_id = u.usuario_id
 );

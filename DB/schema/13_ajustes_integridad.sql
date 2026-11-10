@@ -1,10 +1,14 @@
-
 -- ==========================================
 -- 13 - AJUSTES DE INTEGRIDAD
 -- Restaurante Origenes SV
 -- ==========================================
 
--- Reforzar las condiciones de cierre de turnos
+
+-- ==========================================
+-- 1. REFORZAR LAS CONDICIONES DE CIERRE
+-- DE TURNOS DE CAJA
+-- ==========================================
+
 ALTER TABLE core.turnos_caja
     DROP CONSTRAINT IF EXISTS chk_montos_cierre;
 
@@ -26,3 +30,24 @@ ALTER TABLE core.turnos_caja
             AND monto_contado >= 0
         )
     );
+
+
+-- ==========================================
+-- 2. RESTRICCIÓN DE UNICIDAD EN COMPRAS
+-- ==========================================
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'uq_compra_proveedor_documento'
+          AND conrelid = 'core.compras'::regclass
+    ) THEN
+
+        ALTER TABLE core.compras
+        ADD CONSTRAINT uq_compra_proveedor_documento
+        UNIQUE (proveedor_id, numero_documento);
+
+    END IF;
+END $$;

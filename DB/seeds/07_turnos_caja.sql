@@ -4,7 +4,8 @@
 -- Restaurante Origenes SV
 -- ==========================================
 
--- Sucursal Central
+-- 1. TURNO DE SUCURSAL CENTRAL
+
 INSERT INTO core.turnos_caja (
     caja_id,
     usuario_apertura,
@@ -20,6 +21,7 @@ JOIN core.sucursales s
 JOIN core.usuarios u
     ON u.correo = 'cajero@origenes.test'
 WHERE s.nombre = 'Sucursal Central'
+  AND u.sucursal_id = s.sucursal_id
   AND NOT EXISTS (
       SELECT 1
       FROM core.turnos_caja t
@@ -27,7 +29,9 @@ WHERE s.nombre = 'Sucursal Central'
         AND t.fecha_cierre IS NULL
   );
 
--- Sucursal Norte
+
+-- 2. TURNO DE SUCURSAL NORTE
+
 INSERT INTO core.turnos_caja (
     caja_id,
     usuario_apertura,
@@ -43,6 +47,7 @@ JOIN core.sucursales s
 JOIN core.usuarios u
     ON u.correo = 'gerente@origenes.test'
 WHERE s.nombre = 'Sucursal Norte'
+  AND u.sucursal_id = s.sucursal_id
   AND NOT EXISTS (
       SELECT 1
       FROM core.turnos_caja t

@@ -4,9 +4,8 @@
 -- Restaurante Origenes SV
 -- ==========================================
 
-BEGIN;
-
 -- 1. CREAR EXISTENCIAS DE INGREDIENTES
+
 INSERT INTO core.existencias_ingredientes (
     sucursal_id,
     ingrediente_id,
@@ -23,6 +22,7 @@ ON CONFLICT (sucursal_id, ingrediente_id) DO NOTHING;
 
 
 -- 2. CREAR EXISTENCIAS DE PRODUCTOS DIRECTOS
+
 INSERT INTO core.existencias_productos (
     sucursal_id,
     producto_id,
@@ -40,6 +40,7 @@ ON CONFLICT (sucursal_id, producto_id) DO NOTHING;
 
 
 -- 3. REGISTRAR ENTRADAS DE INGREDIENTES
+
 WITH datos AS (
     SELECT
         s.sucursal_id,
@@ -59,6 +60,7 @@ WITH datos AS (
             WHEN 'Sucursal Central' THEN 'cajero@origenes.test'
             WHEN 'Sucursal Norte' THEN 'gerente@origenes.test'
         END
+        AND u.sucursal_id = s.sucursal_id
     WHERE s.nombre IN ('Sucursal Central', 'Sucursal Norte')
       AND i.codigo IN ('ING-001', 'ING-002', 'ING-003', 'ING-004')
 ),
@@ -96,7 +98,10 @@ UPDATE core.existencias_ingredientes e
 SET cantidad = e.cantidad + n.total,
     fecha_actualizacion = CURRENT_TIMESTAMP
 FROM (
-    SELECT sucursal_id, ingrediente_id, SUM(cantidad) AS total
+    SELECT
+        sucursal_id,
+        ingrediente_id,
+        SUM(cantidad) AS total
     FROM nuevos
     GROUP BY sucursal_id, ingrediente_id
 ) n
@@ -105,6 +110,7 @@ WHERE e.sucursal_id = n.sucursal_id
 
 
 -- 4. REGISTRAR ENTRADAS DE PRODUCTOS DIRECTOS
+
 WITH datos AS (
     SELECT
         s.sucursal_id,
@@ -122,6 +128,7 @@ WITH datos AS (
             WHEN 'Sucursal Central' THEN 'cajero@origenes.test'
             WHEN 'Sucursal Norte' THEN 'gerente@origenes.test'
         END
+        AND u.sucursal_id = s.sucursal_id
     WHERE s.nombre IN ('Sucursal Central', 'Sucursal Norte')
       AND p.codigo IN ('BEB-001', 'BEB-002')
       AND p.tipo_producto = 'DIRECTO'
@@ -160,11 +167,12 @@ UPDATE core.existencias_productos e
 SET cantidad = e.cantidad + n.total,
     fecha_actualizacion = CURRENT_TIMESTAMP
 FROM (
-    SELECT sucursal_id, producto_id, SUM(cantidad) AS total
+    SELECT
+        sucursal_id,
+        producto_id,
+        SUM(cantidad) AS total
     FROM nuevos
     GROUP BY sucursal_id, producto_id
 ) n
 WHERE e.sucursal_id = n.sucursal_id
   AND e.producto_id = n.producto_id;
-
-COMMIT;

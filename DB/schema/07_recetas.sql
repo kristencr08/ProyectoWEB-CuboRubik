@@ -1,11 +1,10 @@
-
 -- ==========================================
 -- 07 - RECETAS Y DETALLE DE RECETAS
 -- Restaurante Origenes SV
 -- ==========================================
 
 -- 1. Recetas
-CREATE TABLE core.recetas (
+CREATE TABLE IF NOT EXISTS core.recetas (
     receta_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     producto_id BIGINT NOT NULL UNIQUE,
@@ -29,8 +28,9 @@ CREATE TABLE core.recetas (
         CHECK (cantidad_producida > 0)
 );
 
+
 -- 2. Detalle de recetas
-CREATE TABLE core.detalle_recetas (
+CREATE TABLE IF NOT EXISTS core.detalle_recetas (
     detalle_receta_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
     receta_id BIGINT NOT NULL,
@@ -54,9 +54,11 @@ CREATE TABLE core.detalle_recetas (
         CHECK (cantidad > 0)
 );
 
+
 -- 3. Indices
-CREATE INDEX idx_detalle_recetas_receta
+
+CREATE INDEX IF NOT EXISTS idx_detalle_recetas_receta
     ON core.detalle_recetas(receta_id);
 
-CREATE INDEX idx_detalle_recetas_ingrediente
+CREATE INDEX IF NOT EXISTS idx_detalle_recetas_ingrediente
     ON core.detalle_recetas(ingrediente_id);
