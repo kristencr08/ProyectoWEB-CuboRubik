@@ -2,6 +2,7 @@
 const { Client } = require('pg');
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs/promises');
 
 dotenv.config({
     path: path.resolve(__dirname, '../.env')
@@ -21,9 +22,7 @@ function validarConfiguracion() {
         .filter(([clave, valor]) => !valor)
         .map(([clave]) => clave);
 
-    if (!nombreBaseDatos) {
-        faltantes.push('DB_NAME');
-    }
+    if (!nombreBaseDatos) faltantes.push('DB_NAME');
 
     if (faltantes.length > 0) {
         throw new Error(
@@ -31,17 +30,15 @@ function validarConfiguracion() {
         );
     }
 
-    // Evitar nombres de base de datos con caracteres no permitidos.
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(nombreBaseDatos)) {
         throw new Error('El nombre de la base de datos no es válido.');
     }
 }
 
-// Conectarse al servidor PostgreSQL
-async function conectarPostgreSQL() {
+async function conectarPostgreSQL(baseDatos = 'postgres') {
     const client = new Client({
         ...config,
-        database: 'postgres',
+        database: baseDatos,
         connectionTimeoutMillis: 5000
     });
 
@@ -49,7 +46,6 @@ async function conectarPostgreSQL() {
     return client;
 }
 
-// Comprobar si la base de datos existe
 async function verificarBaseDatos(client) {
     const resultado = await client.query(
         'SELECT 1 FROM pg_database WHERE datname = $1',
@@ -59,28 +55,87 @@ async function verificarBaseDatos(client) {
     return resultado.rowCount > 0;
 }
 
-// Crear la base de datos si todavía no existe
 async function crearBaseDatos(client) {
     const existe = await verificarBaseDatos(client);
 
     if (existe) {
-        console.log(`\nLa base de datos "${nombreBaseDatos}" ya existe.`);
-        console.log('No se realizaron modificaciones.');
+        console.log(`La base de datos "${nombreBaseDatos}" ya existe.`);
         return;
     }
 
-    console.log(`\nLa base de datos "${nombreBaseDatos}" no existe.`);
-    console.log('Creando base de datos...');
+    console.log(`Creando base de datos "${nombreBaseDatos}"...`);
 
-    // Se valida el nombre antes de utilizarlo en esta consulta.
     await client.query(`CREATE DATABASE "${nombreBaseDatos}"`);
 
-    console.log('\nBase de datos creada correctamente.');
+    console.log('Base de datos creada correctamente.');
 }
 
-// Función principal
+// Obtener los archivos SQL del esquema en orden numérico
+async function obtenerArchivosSQL() {
+    const carpetaSchema = path.join(__dirname, 'schema');
+
+    const archivos = await fs.readdir(carpetaSchema);
+
+    return archivos
+        .filter(archivo => {
+            const coincide = archivo.match(/^(\d{2})_.*\.sql$/);
+            if (!coincide) return false;
+
+            const numero = Number(coincide[1]);
+
+            return numero >= 0 && numero <= 16;
+        })
+        .sort((a, b) => {
+            const numeroA = Number(a.match(/^(\d{2})/)[1]);
+            const numeroB = Number(b.match(/^(\d{2})/)[1]);
+
+            return numeroA - numeroB;
+        });
+}
+
+// Ejecutar los archivos SQL completos
+async function ejecutarEsquema(client) {
+    const carpetaSchema = path.join(__dirname, 'schema');
+    const archivos = await obtenerArchivosSQL();
+
+    if (archivos.length !== 17) {
+        throw new Error(
+            `Se esperaban 17 archivos SQL (00-16), pero se encontraron ${archivos.length}.`
+        );
+    }
+
+    console.log('\nIniciando creación del esquema...');
+
+    for (const archivo of archivos) {
+        const rutaArchivo = path.join(carpetaSchema, archivo);
+        const contenidoSQL = await fs.readFile(rutaArchivo, 'utf8');
+
+        console.log(`Ejecutando: ${archivo}`);
+
+        try {
+    await client.query('BEGIN');
+
+    await client.query(contenidoSQL);
+
+    await client.query('COMMIT');
+
+    console.log(`Correcto: ${archivo}`);
+
+} catch (error) {
+    await client.query('ROLLBACK');
+
+    throw new Error(
+        `Error ejecutando ${archivo}: ${error.message}`
+    );
+}
+    }
+
+    console.log('\nEsquema creado correctamente.');
+}
+
 async function iniciarConfiguracion() {
-    let client;
+    let clientServidor;
+    let clientBaseDatos;
 
     try {
         validarConfiguracion();
@@ -88,29 +143,33 @@ async function iniciarConfiguracion() {
         console.log('====================================');
         console.log('   CONFIGURACIÓN DE BASE DE DATOS');
         console.log('====================================');
-        console.log('Verificando conexión con PostgreSQL...');
 
-        client = await conectarPostgreSQL();
+        console.log('\nConectando con PostgreSQL...');
 
-        const resultado = await client.query(
-            'SELECT version() AS version'
-        );
+        clientServidor = await conectarPostgreSQL();
 
-        console.log('\nConexión establecida correctamente.');
-        console.log('Servidor:', resultado.rows[0].version.split(',')[0]);
+        console.log('Conexión establecida correctamente.');
 
-        await crearBaseDatos(client);
+        await crearBaseDatos(clientServidor);
 
-        console.log('\nProceso de configuración finalizado.');
+        clientBaseDatos = await conectarPostgreSQL(nombreBaseDatos);
+
+        await ejecutarEsquema(clientBaseDatos);
+
+        console.log('\nInstalación del esquema finalizada.');
 
     } catch (error) {
-        console.error('\nError durante la configuración de la base de datos.');
+        console.error('\nError durante la instalación.');
         console.error('Motivo:', error.message);
         process.exitCode = 1;
 
     } finally {
-        if (client) {
-            await client.end().catch(() => {});
+        if (clientBaseDatos) {
+            await clientBaseDatos.end().catch(() => {});
+        }
+
+        if (clientServidor) {
+            await clientServidor.end().catch(() => {});
         }
     }
 }
