@@ -2,11 +2,15 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+const authRoutes = require('./routes/authRoutes');
 const app = express();
 
 //Middlewares globales
 app.use(cors());
 app.use(express.json());
+
+// Montar la ruta de autenticación
+app.use('/api/auth', authRoutes);
 
 // Ruta inicial para probar el funcionamiento del servidor
 app.get('/', (req, res) => {
