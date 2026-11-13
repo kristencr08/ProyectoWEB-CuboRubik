@@ -13,10 +13,7 @@ const {
 } = require('../validators/cajaValidation');
 
 
-// ==========================================
-// 1. ABRIR CAJA
-// ==========================================
-
+// ABRIR CAJA
 const aperturaCaja = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
@@ -58,7 +55,7 @@ const aperturaCaja = async (req, res) => {
 };
 
 
-// 2. REGISTRAR MOVIMIENTO
+// REGISTRAR MOVIMIENTO
 
 const movimientoCaja = async (req, res) => {
   try {
@@ -103,8 +100,7 @@ const movimientoCaja = async (req, res) => {
 };
 
 
-// 3. VERIFICAR PERMISOS PARA CERRAR CAJA
-
+// VERIFICAR PERMISOS
 const verificarPermisoCierre = async (usuarioId) => {
   const resultado = await pool.query(
     `SELECT r.nombre AS rol
