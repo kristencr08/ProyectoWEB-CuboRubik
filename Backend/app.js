@@ -5,6 +5,7 @@ require('dotenv').config();
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
 const posRoutes = require('./routes/posRoutes');
+const cajaRoutes = require('./routes/cajaRoutes');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 // Montar las rutas de la API
 app.use('/api/auth', authRoutes);
 app.use('/api/pos', posRoutes);
+app.use('/api/caja', cajaRoutes);
 
 // Ruta inicial de prueba
 app.get('/', (req, res) => {
