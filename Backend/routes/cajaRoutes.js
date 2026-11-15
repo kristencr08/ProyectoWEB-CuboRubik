@@ -5,14 +5,15 @@ const router = express.Router();
 const {
   aperturaCaja,
   movimientoCaja,
-  cierreCaja
+  solicitudCierreCaja,
+  autorizacionCierreCaja
 } = require('../controllers/cajaController');
-
 // Importar middleware de autenticación.
 const { verificarToken } = require('../middlewares/authMiddleware');
 
 
 // RUTAS DE CAJA
+// Abrir caja y asignar cajero.
 router.post(
   '/abrir',
   verificarToken,
@@ -24,12 +25,20 @@ router.post(
   verificarToken,
   movimientoCaja
 );
-// Cerrar una caja.
+// Solicitar cierre de caja (cajero).
 router.post(
-  '/:turnoId/cerrar',
+  '/:turnoId/solicitar-cierre',
   verificarToken,
-  cierreCaja
+  solicitudCierreCaja
+);
+// Autorizar cierre de caja (administrador o gerente).
+router.post(
+  '/:turnoId/autorizar-cierre',
+  verificarToken,
+  autorizacionCierreCaja
 );
 
 
+
+// EXPORTAR RUTAS
 module.exports = router;
