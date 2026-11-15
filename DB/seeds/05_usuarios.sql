@@ -53,3 +53,12 @@ WHERE NOT EXISTS (
     FROM core.usuarios existente
     WHERE existente.correo = u.correo
 );
+
+
+SELECT
+    usuario_id,
+    nombre,
+    correo,
+    rol_id,
+    activo
+FROM core.usuarios;
