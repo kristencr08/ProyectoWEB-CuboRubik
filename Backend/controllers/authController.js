@@ -6,7 +6,7 @@ const login = async (req, res) => {
   const { usuario, clave } = req.body;
 
   try {
-    const result = await pool.query('SELECT * FROM core.usuarios WHERE usuario = $1', [usuario]);
+    const result = await pool.query('SELECT * FROM core.correo WHERE usuario = $1', [usuario]);
     if (result.rows.length === 0) {
       return res.status(401).json({ ok: false, mensaje: 'Usuario no encontrado' });
     }
