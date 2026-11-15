@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -6,21 +7,28 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const posRoutes = require('./routes/posRoutes');
 const cajaRoutes = require('./routes/cajaRoutes');
+const inventarioRoutes = require('./routes/inventarioRoutes');
 
 const app = express();
 
-// Middlewares globales
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Montar las rutas de la API
+// Rutas existentes
 app.use('/api/auth', authRoutes);
 app.use('/api/pos', posRoutes);
 app.use('/api/caja', cajaRoutes);
 
-// Ruta inicial de prueba
+// NUEVA RUTA DE INVENTARIO
+app.use('/api/inventario', inventarioRoutes);
+
+// Ruta de prueba
 app.get('/', (req, res) => {
-  res.json({ ok: true, mensaje: 'API Restaurante Orígenes SV activa' });
+  res.json({
+    ok: true,
+    mensaje: 'API Restaurante Orígenes SV activa'
+  });
 });
 
 const PUERTO = process.env.PORT || 3000;
