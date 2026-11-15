@@ -1,29 +1,30 @@
-const pool = require('../../DB/db');
-
 const {
   abrirCaja,
   registrarMovimiento,
-  cerrarCaja
+  solicitarCierreCaja,
+  autorizarCierreCaja
 } = require('../services/cajaService');
-
 const {
   validarAperturaCaja,
   validarMovimientoCaja,
-  validarCierreCaja
+  validarSolicitudCierre,
+  validarAutorizacionCierre
 } = require('../validators/cajaValidation');
 
 
-// ABRIR CAJA
+
+// 1. ABRIR CAJA Y ASIGNAR CAJERO
 const aperturaCaja = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
     const datos = {
       cajaId: req.body.cajaId,
+      cajeroId: req.body.cajeroId,
       turno: req.body.turno,
       montoInicial: req.body.montoInicial
     };
 
-    // Validar los datos recibidos.
+    // Validar los datos de apertura.
     const validacion = validarAperturaCaja(datos);
     if (!validacion.valido) {
       return res.status(400).json({
@@ -37,11 +38,13 @@ const aperturaCaja = async (req, res) => {
     const resultado = await abrirCaja({
       cajaId: datos.cajaId,
       usuarioId,
+      cajeroId: datos.cajeroId,
+      tipoTurno: datos.turno,
       montoInicial: datos.montoInicial
     });
     return res.status(201).json({
       ok: true,
-      mensaje: 'Caja abierta correctamente.',
+      mensaje: 'Caja abierta y cajero asignado correctamente.',
       turno: resultado
     });
 
@@ -55,8 +58,8 @@ const aperturaCaja = async (req, res) => {
 };
 
 
-// REGISTRAR MOVIMIENTO
 
+// 2. REGISTRAR MOVIMIENTO DE CAJA
 const movimientoCaja = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
@@ -66,7 +69,7 @@ const movimientoCaja = async (req, res) => {
       descripcion: req.body.descripcion
     };
 
-    // Validar los datos del movimiento.
+    // Validar el movimiento.
     const validacion = validarMovimientoCaja(datos);
     if (!validacion.valido) {
       return res.status(400).json({
@@ -100,41 +103,11 @@ const movimientoCaja = async (req, res) => {
 };
 
 
-// VERIFICAR PERMISOS
-const verificarPermisoCierre = async (usuarioId) => {
-  const resultado = await pool.query(
-    `SELECT r.nombre AS rol
-     FROM core.usuarios u
-     INNER JOIN core.roles r
-       ON u.rol_id = r.rol_id
-     WHERE u.usuario_id = $1
-       AND u.activo = TRUE
-       AND r.activo = TRUE`,
-    [usuarioId]
-  );
 
-  if (resultado.rowCount === 0) {
-    return false;
-  }
-  const rol = resultado.rows[0].rol.toUpperCase();
-  return ['GERENTE', 'ADMINISTRADOR'].includes(rol);
-};
-
-
-
-// CERRAR CAJA
-const cierreCaja = async (req, res) => {
+// 3. SOLICITAR CIERRE DE CAJA
+const solicitudCierreCaja = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
-
-    // Comprobar que el usuario tenga permisos.
-    const autorizado = await verificarPermisoCierre(usuarioId);
-    if (!autorizado) {
-      return res.status(403).json({
-        ok: false,
-        mensaje: 'No tienes permisos para cerrar cajas.'
-      });
-    }
     const datos = {
       efectivoContado: req.body.efectivoContado,
       tarjetaContada: req.body.tarjetaContada,
@@ -142,31 +115,33 @@ const cierreCaja = async (req, res) => {
       chivoWalletContado: req.body.chivoWalletContado
     };
 
-    // Validar los montos declarados.
-    const validacion = validarCierreCaja(datos);
+    // Validar los cuatro montos declarados.
+    const validacion = validarSolicitudCierre(datos);
     if (!validacion.valido) {
       return res.status(400).json({
         ok: false,
-        mensaje: 'Los datos del cierre no son válidos.',
+        mensaje: 'Los datos de la solicitud de cierre no son válidos.',
         errores: validacion.errores
       });
     }
 
-    // Ejecutar el cierre.
-    const resultado = await cerrarCaja({
+    // Registrar la solicitud del cajero.
+    const resultado = await solicitarCierreCaja({
       turnoId: req.params.turnoId,
-      usuarioCierre: usuarioId,
-      montoContado: datos.efectivoContado
+      usuarioId,
+      efectivoContado: datos.efectivoContado,
+      tarjetaContada: datos.tarjetaContada,
+      bitcoinContado: datos.bitcoinContado,
+      chivoWalletContado: datos.chivoWalletContado
     });
     return res.status(200).json({
       ok: true,
-      mensaje: 'Caja cerrada correctamente.',
-      cierre: resultado.cierre,
-      resumen: resultado.resumen
+      mensaje: 'Solicitud de cierre registrada. Pendiente de autorización.',
+      solicitud: resultado
     });
 
   } catch (error) {
-    console.error('Error al cerrar caja:', error.message);
+    console.error('Error al solicitar cierre:', error.message);
     return res.status(400).json({
       ok: false,
       mensaje: error.message
@@ -175,9 +150,48 @@ const cierreCaja = async (req, res) => {
 };
 
 
-//EXPORTAR CONTROLADORES
+
+// 4. AUTORIZAR CIERRE DE CAJA
+const autorizacionCierreCaja = async (req, res) => {
+  try {
+    const usuarioId = req.usuario.id;
+    // Validar los datos de autorización.
+    const validacion = validarAutorizacionCierre(req.body);
+    if (!validacion.valido) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'Los datos de autorización no son válidos.',
+        errores: validacion.errores
+      });
+    }
+
+    // El servicio comprueba el rol, la sucursal
+    // y que el autorizador no sea quien solicitó el cierre.
+    const resultado = await autorizarCierreCaja({
+      turnoId: req.params.turnoId,
+      usuarioAutorizacion: usuarioId
+    });
+    return res.status(200).json({
+      ok: true,
+      mensaje: 'Cierre de caja autorizado correctamente.',
+      cierre: resultado.cierre,
+      resumen: resultado.resumen
+    });
+  } catch (error) {
+    console.error('Error al autorizar cierre:', error.message);
+    return res.status(400).json({
+      ok: false,
+      mensaje: error.message
+    });
+  }
+};
+
+
+
+// EXPORTAR CONTROLADORES
 module.exports = {
   aperturaCaja,
   movimientoCaja,
-  cierreCaja
+  solicitudCierreCaja,
+  autorizacionCierreCaja
 };
