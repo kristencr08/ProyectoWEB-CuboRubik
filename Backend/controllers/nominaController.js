@@ -2,30 +2,46 @@ const nominaService = require('../services/nominaService');
 const {
     validarEmpleado,
     validarPlanilla,
-    validarBonificaciones,
     esIdValido
 } = require('../validators/nominaValidation');
 
 
-// MANEJO DE ERRORES
+// MANEJO CENTRALIZADO DE ERRORES
 const manejarError = (res, error) => {
-    console.error('Error en módulo de nómina:', error);
-    // Restricciones de duplicidad
+    // Registrar detalles técnicos únicamente en el servidor.
+    console.error('ERROR COMPLETO DE NÓMINA:', {
+        message: error.message,
+        code: error.code,
+        detail: error.detail,
+        schema: error.schema,
+        table: error.table,
+        column: error.column,
+        constraint: error.constraint,
+        where: error.where
+    });
+
+    // Errores personalizados del servicio.
+    if (error.status) {
+        return res.status(error.status).json({
+            ok: false,
+            mensaje: error.message
+        });
+    }
+
+    // Restricciones de PostgreSQL.
     if (error.code === '23505') {
         return res.status(409).json({
             ok: false,
             mensaje: 'El registro ya existe o está duplicado.'
         });
     }
-    // Restricciones de claves foráneas
     if (error.code === '23503') {
         return res.status(400).json({
             ok: false,
             mensaje: 'La sucursal, empleado o planilla indicada no existe.'
         });
     }
-    // Restricciones CHECK de PostgreSQL
-    if (error.code === '23514') {
+    if (error.code === '23514' || error.code === '23502') {
         return res.status(400).json({
             ok: false,
             mensaje: 'Los datos no cumplen las reglas de nómina.'
@@ -71,6 +87,7 @@ const registrarEmpleado = async (req, res) => {
         return manejarError(res, error);
     }
 };
+
 
 
 // 2. OBTENER EMPLEADOS DE UNA SUCURSAL
@@ -134,7 +151,9 @@ const crearPlanilla = async (req, res) => {
 const generarDetallePlanilla = async (req, res) => {
     try {
         const { planillaId } = req.params;
-        const { bonificacionesPorEmpleado = [] } = req.body || {};
+        const {
+            bonificacionesPorEmpleado = []
+        } = req.body || {};
         if (!esIdValido(planillaId)) {
             return res.status(400).json({
                 ok: false,
@@ -164,6 +183,7 @@ const generarDetallePlanilla = async (req, res) => {
 };
 
 
+
 // 5. CONSULTAR PLANILLA
 const obtenerPlanilla = async (req, res) => {
     try {
@@ -178,12 +198,6 @@ const obtenerPlanilla = async (req, res) => {
         const planilla = await nominaService.obtenerPlanilla(
             planillaId
         );
-        if (!planilla) {
-            return res.status(404).json({
-                ok: false,
-                mensaje: 'No se encontró la planilla solicitada.'
-            });
-        }
         return res.status(200).json({
             ok: true,
             planilla
@@ -193,6 +207,7 @@ const obtenerPlanilla = async (req, res) => {
         return manejarError(res, error);
     }
 };
+
 
 
 // 6. PROCESAR PLANILLA
@@ -219,6 +234,7 @@ const procesarPlanilla = async (req, res) => {
         return manejarError(res, error);
     }
 };
+
 
 
 // 7. MARCAR PLANILLA COMO PAGADA

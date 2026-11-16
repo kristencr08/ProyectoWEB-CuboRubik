@@ -52,5 +52,5 @@ router.patch(
     marcarPlanillaPagada
 );
 
-
+    
 module.exports = router;

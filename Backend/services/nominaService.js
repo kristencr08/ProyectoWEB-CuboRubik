@@ -1,6 +1,5 @@
 const pool = require('../../DB/db');
 
-
 // UTILIDADES GENERALES
 const crearError = (mensaje, status = 400) => {
   const error = new Error(mensaje);
@@ -8,22 +7,102 @@ const crearError = (mensaje, status = 400) => {
   return error;
 };
 
-const redondear = (cantidad) =>
-  Math.round((cantidad + Number.EPSILON) * 100) / 100;
 const aCentavos = (cantidad) =>
   Math.round(Number(cantidad) * 100);
 const desdeCentavos = (centavos) =>
   Number((centavos / 100).toFixed(2));
-const validarFecha = (fecha) =>
-  typeof fecha === 'string' &&
-  /^\d{4}-\d{2}-\d{2}$/.test(fecha) &&
-  !Number.isNaN(Date.parse(`${fecha}T00:00:00`));
+const redondear = (cantidad) =>
+  Math.round((cantidad + Number.EPSILON) * 100) / 100;
+
+
+// CALCULAR SALARIO PROPORCIONAL
+const convertirFecha = (fecha) => {
+  let texto;
+  if (fecha instanceof Date) {
+    if (Number.isNaN(fecha.getTime())) {
+      throw crearError(
+        'Existe una fecha inválida en el cálculo de nómina.'
+      );
+    }
+
+    // PostgreSQL devuelve DATE como Date en la configuración actual de pg.
+    // Usamos UTC para evitar cambios de día por la zona horaria.
+    texto = fecha.toISOString().slice(0, 10);
+  } else {
+    texto = String(fecha ?? '').slice(0, 10);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+    throw crearError(
+      'Existe una fecha inválida en el cálculo de nómina.'
+    );
+  }
+
+  const convertida = new Date(`${texto}T00:00:00.000Z`);
+  if (
+    Number.isNaN(convertida.getTime()) ||
+    convertida.toISOString().slice(0, 10) !== texto
+  ) {
+    throw crearError(
+      'Existe una fecha inválida en el cálculo de nómina.'
+    );
+  }
+  return convertida;
+};
+
+
+const calcularSalarioQuincenal = ({
+  salarioMensual,
+  fechaContratacion,
+  fechaInicio,
+  fechaFin
+}) => {
+  const salario = Number(salarioMensual);
+  if (!Number.isFinite(salario) || salario < 0) {
+    throw crearError(
+      'El salario mensual del empleado no es válido.'
+    );
+  }
+
+  const contratacion = convertirFecha(fechaContratacion);
+  const inicio = convertirFecha(fechaInicio);
+  const fin = convertirFecha(fechaFin);
+  if (inicio > fin) {
+    throw crearError(
+      'El período de la planilla tiene fechas inválidas.'
+    );
+  }
+  // Si fue contratado después de finalizar la quincena.
+  if (contratacion > fin) {
+    return 0;
+  }
+
+  // Primer día que corresponde pagar al empleado.
+  const inicioTrabajado = contratacion > inicio ? contratacion : inicio;
+  const milisegundosPorDia = 24 * 60 * 60 * 1000;
+  const diasPeriodo = Math.floor((fin - inicio) / milisegundosPorDia) + 1;
+  const diasTrabajados = Math.floor((fin - inicioTrabajado) / milisegundosPorDia) + 1;
+  if (diasPeriodo <= 0 || diasTrabajados <= 0) {
+    throw crearError(
+      'No fue posible determinar los días trabajados.'
+    );
+  }
+  // El salario mensual se divide en dos quincenas y se prorratea
+  // según los días trabajados dentro de la quincena.
+  const salarioQuincenal = salario / 2;
+  return redondear(
+    salarioQuincenal * (diasTrabajados / diasPeriodo)
+  );
+};
+
+
+// CALCULAR FECHA DE PAGO
 const obtenerFechaPago = (fechaInicio, fechaFin) => {
   const inicio = new Date(`${fechaInicio}T00:00:00Z`);
   const fin = new Date(`${fechaFin}T00:00:00Z`);
   const diaInicio = inicio.getUTCDate();
   const diaFin = fin.getUTCDate();
 
+  // Primera quincena: pago el día 16.
   if (
     diaInicio === 1 &&
     diaFin === 15 &&
@@ -34,6 +113,8 @@ const obtenerFechaPago = (fechaInicio, fechaFin) => {
     pago.setUTCDate(16);
     return pago.toISOString().slice(0, 10);
   }
+
+  // Segunda quincena: pago el primer día del mes siguiente.
   if (diaInicio === 16) {
     const ultimoDia = new Date(
       Date.UTC(
@@ -61,14 +142,13 @@ const obtenerFechaPago = (fechaInicio, fechaFin) => {
 
 // CÁLCULOS LEGALES
 const calcularISSS = (salarioQuincenal) => {
-  // ISSS laboral: 3%, con máximo cotizable mensual de $1,000.
-  // Para una quincena se utiliza un máximo de $500.
-
+  // ISSS laboral: 3%.
   const base = Math.min(salarioQuincenal, 500);
   return desdeCentavos(
     Math.round(aCentavos(base) * 0.03)
   );
 };
+
 
 const calcularAFP = (salarioQuincenal) => {
   // Cotización laboral AFP: 7.25%.
@@ -77,29 +157,23 @@ const calcularAFP = (salarioQuincenal) => {
   );
 };
 
+
 const calcularISRQuincenal = ({
   remuneracionGravada,
   isss,
   afp,
   salarioMensual
 }) => {
-  // La tabla se aplica después de descontar ISSS y AFP.
   let baseGravada = redondear(
     remuneracionGravada - isss - afp
   );
-
-  // Deducción anual de $1,600:
-  // se distribuye en 24 períodos para el cálculo ordinario
-  // cuando el ingreso anual proyectado no supera $9,100.
-  //
-  // El recálculo legal de junio y diciembre se implementará
-  // como una operación independiente.
   if (salarioMensual * 12 <= 9100) {
     baseGravada = Math.max(
       0,
       redondear(baseGravada - (1600 / 24))
     );
   }
+  // Tabla de retención quincenal.
   if (baseGravada <= 275) {
     return 0;
   }
@@ -118,11 +192,32 @@ const calcularISRQuincenal = ({
   );
 };
 
+
+
+// CALCULAR NÓMINA DE UN EMPLEADO
 const calcularNominaEmpleado = ({
   salarioMensual,
+  salarioQuincenal,
   bonificaciones
 }) => {
-  const salarioQuincenal = redondear(salarioMensual / 2);
+  salarioMensual = Number(salarioMensual);
+  salarioQuincenal = Number(salarioQuincenal);
+  bonificaciones = Number(bonificaciones);
+  if (
+    !Number.isFinite(salarioMensual) ||
+    salarioMensual < 0 ||
+    !Number.isFinite(salarioQuincenal) ||
+    salarioQuincenal < 0 ||
+    !Number.isFinite(bonificaciones) ||
+    bonificaciones < 0
+  ) {
+    throw crearError(
+      'Los valores para calcular la nómina no son válidos.'
+    );
+  }
+
+  // El salario quincenal ya llega prorrateado
+  // según los días efectivamente trabajados.
   const remuneracionGravada = redondear(
     salarioQuincenal + bonificaciones
   );
@@ -134,6 +229,7 @@ const calcularNominaEmpleado = ({
     afp: deduccionAFP,
     salarioMensual
   });
+
   const deducciones = redondear(
     deduccionISSS + deduccionAFP + deduccionISR
   );
@@ -145,7 +241,6 @@ const calcularNominaEmpleado = ({
       'Las deducciones superan el salario del empleado.'
     );
   }
-
   return {
     salario_base: salarioQuincenal,
     bonificaciones,
@@ -156,6 +251,7 @@ const calcularNominaEmpleado = ({
     salario_neto: salarioNeto
   };
 };
+
 
 
 // 1. REGISTRAR EMPLEADO
@@ -217,6 +313,7 @@ const registrarEmpleado = async ({
 };
 
 
+
 // 2. CONSULTAR EMPLEADOS POR SUCURSAL
 const obtenerEmpleados = async (sucursalId) => {
   const resultado = await pool.query(
@@ -241,6 +338,7 @@ const obtenerEmpleados = async (sucursalId) => {
 };
 
 
+
 // 3. CREAR PLANILLA
 const crearPlanilla = async ({
   nombre,
@@ -253,7 +351,6 @@ const crearPlanilla = async ({
     fechaInicio,
     fechaFin
   );
-
   try {
     const resultado = await pool.query(
       `INSERT INTO core.planillas (
@@ -293,6 +390,7 @@ const crearPlanilla = async ({
     throw error;
   }
 };
+
 
 
 // 4. GENERAR DETALLE DE PLANILLA
@@ -341,11 +439,15 @@ const generarDetallePlanilla = async ({
       );
     }
 
+    // Obtener empleados activos de la sucursal.
+    // También recuperamos su fecha de contratación
+    // para calcular el salario proporcional.
     const empleadosResultado = await client.query(
       `SELECT
           empleado_id,
           nombre,
-          salario_base
+          salario_base,
+          fecha_contratacion
        FROM core.empleados
        WHERE sucursal_id = $1
          AND activo = TRUE
@@ -361,6 +463,7 @@ const generarDetallePlanilla = async ({
       );
     }
 
+    // Validar bonificaciones.
     const bonificacionesMap = new Map();
     for (const item of bonificacionesPorEmpleado) {
       if (
@@ -388,6 +491,8 @@ const generarDetallePlanilla = async ({
       );
     }
 
+    // Verificar que las bonificaciones correspondan
+    // a empleados activos de esta sucursal.
     const idsEmpleados = new Set(
       empleadosResultado.rows.map(
         empleado => String(empleado.empleado_id)
@@ -408,11 +513,21 @@ const generarDetallePlanilla = async ({
           String(empleado.empleado_id)
         ) || 0;
 
+      // Calcular salario según los días trabajados.
+      const salarioQuincenal = calcularSalarioQuincenal({
+        salarioMensual: Number(empleado.salario_base),
+        fechaContratacion: empleado.fecha_contratacion,
+        fechaInicio: planilla.fecha_inicio,
+        fechaFin: planilla.fecha_fin
+      });
+
       const calculo = calcularNominaEmpleado({
         salarioMensual: Number(empleado.salario_base),
+        salarioQuincenal,
         bonificaciones
       });
 
+      // Guardar detalle del empleado.
       const resultado = await client.query(
         `INSERT INTO core.detalle_planillas (
           planilla_id,
@@ -462,6 +577,7 @@ const generarDetallePlanilla = async ({
 };
 
 
+
 // 5. CONSULTAR PLANILLA Y DETALLE
 const obtenerPlanilla = async (planillaId) => {
   const resultado = await pool.query(
@@ -503,6 +619,7 @@ const obtenerPlanilla = async (planillaId) => {
 };
 
 
+
 // 6. PROCESAR PLANILLA
 const procesarPlanilla = async (planillaId) => {
   const resultado = await pool.query(
@@ -528,6 +645,7 @@ const procesarPlanilla = async (planillaId) => {
 };
 
 
+
 // 7. MARCAR PLANILLA COMO PAGADA
 const marcarPlanillaPagada = async (planillaId) => {
   const resultado = await pool.query(
@@ -546,6 +664,7 @@ const marcarPlanillaPagada = async (planillaId) => {
   }
   return resultado.rows[0];
 };
+
 
 
 // EXPORTACIONES

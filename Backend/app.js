@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const posRoutes = require('./routes/posRoutes');
 const cajaRoutes = require('./routes/cajaRoutes');
+const nominaRoutes = require('./routes/nominaRoutes');
 const inventarioRoutes = require('./routes/inventarioRoutes');
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/pos', posRoutes);
 app.use('/api/caja', cajaRoutes);
+app.use('/api/nomina', nominaRoutes);
 
 // NUEVA RUTA DE INVENTARIO
 app.use('/api/inventario', inventarioRoutes);
