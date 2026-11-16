@@ -93,11 +93,13 @@ const movimientoCaja = async (req, res) => {
       movimiento: resultado
     });
 
-  } catch (error) {
+  }catch (error) {
     console.error('Error al registrar movimiento:', error.message);
-    return res.status(400).json({
-      ok: false,
-      mensaje: error.message
+    const esAccesoDenegado = error.message ===
+        'No puedes registrar movimientos en un turno asignado a otro cajero.';
+    return res.status(esAccesoDenegado ? 403 : 400).json({
+        ok: false,
+        mensaje: error.message
     });
   }
 };
