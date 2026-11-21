@@ -229,7 +229,7 @@ async function ejecutarEsquema(client) {
         client,
         carpetaSchema,
         0,
-        20,
+        21,
         'Creación del esquema'
     );
 }
