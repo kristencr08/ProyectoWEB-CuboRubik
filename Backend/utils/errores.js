@@ -1,58 +1,41 @@
-// UTILIDADES PARA LEER PARAMETROS DE RUTA Y QUERY STRING
+// UTILIDADES DE MANEJO DE ERRORES
+// Todos los servicios lanzan errores con la propiedad "status".
+// Los controladores los convierten en respuestas HTTP con responderError.
 
-const { crearError } = require('./errores');
-const { esIdValido } = require('../validators/comunes');
-
-// :id de la URL -> número, o error 400
-const leerIdRuta = (valor, nombre = 'identificador') => {
-  if (!esIdValido(valor)) {
-    throw crearError(400, `El ${nombre} no es válido`);
-  }
-  return Number(valor);
+const crearError = (status, mensaje) => {
+  const error = new Error(mensaje);
+  error.status = status;
+  return error;
 };
 
-// ?limite=50 -> entre 1 y "maximo"
-const leerLimite = (valor, porDefecto = 50, maximo = 200) => {
-  if (valor === undefined) return porDefecto;
-
-  const numero = Number(valor);
-
-  if (!Number.isInteger(numero) || numero < 1) {
-    throw crearError(400, 'El límite debe ser un entero mayor que 0');
-  }
-
-  return Math.min(numero, maximo);
+// Errores de PostgreSQL que son culpa del cliente, no del servidor.
+const ERRORES_POSTGRES = {
+  '23505': [409, 'Ya existe un registro con esos datos'],
+  '23503': [400, 'Se hace referencia a un registro que no existe'],
+  '23514': [400, 'Los datos no cumplen las reglas del negocio'],
+  '22P02': [400, 'Formato de dato no válido'],
+  '22003': [400, 'Número fuera de rango permitido']
 };
 
-// ?desde=2026-11-01 -> "2026-11-01" validado como fecha real
-const leerFecha = (valor, nombre) => {
-  if (valor === undefined) return undefined;
-
-  const texto = String(valor);
-  const fecha = new Date(`${texto}T00:00:00Z`);
-
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(texto) ||
-    Number.isNaN(fecha.getTime()) ||
-    fecha.toISOString().slice(0, 10) !== texto
-  ) {
-    throw crearError(400, `${nombre} debe tener formato AAAA-MM-DD`);
+const responderError = (res, error, mensajeGeneral) => {
+  if (error && error.status) {
+    return res.status(error.status).json({
+      ok: false,
+      mensaje: error.message
+    });
   }
 
-  return texto;
-};
-
-// ?estado=PENDIENTE -> debe estar en la lista permitida
-const leerOpcion = (valor, permitidas, nombre) => {
-  if (valor === undefined) return undefined;
-
-  const texto = String(valor).toUpperCase();
-
-  if (!permitidas.includes(texto)) {
-    throw crearError(400, `${nombre} debe ser uno de: ${permitidas.join(', ')}`);
+  if (error && ERRORES_POSTGRES[error.code]) {
+    const [status, mensaje] = ERRORES_POSTGRES[error.code];
+    return res.status(status).json({ ok: false, mensaje });
   }
 
-  return texto;
+  console.error(mensajeGeneral, error);
+
+  return res.status(500).json({
+    ok: false,
+    mensaje: mensajeGeneral
+  });
 };
 
-module.exports = { leerIdRuta, leerLimite, leerFecha, leerOpcion };
+module.exports = { crearError, responderError };
