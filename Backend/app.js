@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -9,6 +8,10 @@ const posRoutes = require('./routes/posRoutes');
 const cajaRoutes = require('./routes/cajaRoutes');
 const nominaRoutes = require('./routes/nominaRoutes');
 const inventarioRoutes = require('./routes/inventarioRoutes');
+const proveedoresRoutes = require('./routes/proveedoresRoutes');
+const comprasRoutes = require('./routes/comprasRoutes');
+const cuentasPagarRoutes = require('./routes/cuentasPagarRoutes');
+const recetasRoutes = require('./routes/recetasRoutes');
 
 const app = express();
 
@@ -22,8 +25,12 @@ app.use('/api/pos', posRoutes);
 app.use('/api/caja', cajaRoutes);
 app.use('/api/nomina', nominaRoutes);
 
-// NUEVA RUTA DE INVENTARIO
+// Inventario, recetas, compras y cuentas por pagar
 app.use('/api/inventario', inventarioRoutes);
+app.use('/api/recetas', recetasRoutes);
+app.use('/api/proveedores', proveedoresRoutes);
+app.use('/api/compras', comprasRoutes);
+app.use('/api/cuentas-por-pagar', cuentasPagarRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
