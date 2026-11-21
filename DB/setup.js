@@ -245,7 +245,7 @@ async function ejecutarSeeds(client) {
         client,
         carpetaSeeds,
         1,
-        12,
+        13,
         'Carga de datos de prueba'
     );
 }
