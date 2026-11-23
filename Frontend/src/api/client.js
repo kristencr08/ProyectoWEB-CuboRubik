@@ -94,4 +94,17 @@ export const api = {
     request(`/caja/${turnoId}/solicitar-cierre`, { method: 'POST', body: datos }),
   autorizarCierreCaja: (turnoId, datos = {}) =>
     request(`/caja/${turnoId}/autorizar-cierre`, { method: 'POST', body: datos }),
+
+  // RRHH y nómina
+  empleados: (sucursalId) => request(`/nomina/empleados/sucursal/${sucursalId}`),
+  crearEmpleado: (datos) => request('/nomina/empleados', { method: 'POST', body: datos }),
+  planillas: (sucursalId) => request(`/nomina/planillas/sucursal/${sucursalId}`),
+  crearPlanilla: (datos) => request('/nomina/planillas', { method: 'POST', body: datos }),
+  generarDetallePlanilla: (planillaId, datos = {}) =>
+    request(`/nomina/planillas/${planillaId}/detalles`, { method: 'POST', body: datos }),
+  obtenerPlanilla: (planillaId) => request(`/nomina/planillas/${planillaId}`),
+  procesarPlanilla: (planillaId) =>
+    request(`/nomina/planillas/${planillaId}/procesar`, { method: 'POST' }),
+  pagarPlanilla: (planillaId) =>
+    request(`/nomina/planillas/${planillaId}/pagar`, { method: 'PATCH' }),
 }
