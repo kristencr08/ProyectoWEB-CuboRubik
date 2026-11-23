@@ -9,6 +9,7 @@ import { useAuth } from './context/AuthContext'
 import { rutaInicial } from './utils/permisos'
 import Inventario from './pages/Inventario'
 import Proveedores from './pages/Proveedores'
+import Caja from './pages/Caja'
 
 export default function App() {
   const { user } = useAuth()
@@ -27,7 +28,7 @@ export default function App() {
           {/*Pantallas de otros modulos
               Para conectar la tuya: importa tu componente arriba y reemplaza el <Placeholder />
               de tu ruta por <TuPantalla />. No hace falta tocar nada más. */}
-          <Route path="/caja" element={<Placeholder titulo="Caja y turnos" />} />
+          <Route path="/caja" element={<Caja />} />
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/recetas" element={<Placeholder titulo="Recetas y menú" />} />
           <Route path="/compras" element={<Placeholder titulo="Compras" />} />
