@@ -84,8 +84,9 @@ export default function MovimientosTab() {
           <Spinner color="primary" />
         </div>
       ) : (
-        <Table responsive hover size="sm" className="align-middle">
-          <thead>
+        <div className="table-responsive bg-white rounded shadow-sm">
+<Table hover size="sm" className="mb-0 align-middle">
+          <thead className="table-light">
             <tr>
               <th>Fecha</th>
               <th>Movimiento</th>
@@ -122,6 +123,7 @@ export default function MovimientosTab() {
             ))}
           </tbody>
         </Table>
+</div>
       )}
     </>
   )

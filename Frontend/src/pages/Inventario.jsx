@@ -10,6 +10,7 @@ import ModalAjuste from '../components/inventario/ModalAjuste'
 import ModalStockMinimo from '../components/inventario/ModalStockMinimo'
 import IngredientesTab from '../components/inventario/IngredientesTab'
 import MovimientosTab from '../components/inventario/MovimientosTab'
+import GrupoFiltro from '../components/GrupoFiltro'
 
 // El backend (inventarioRoutes) solo deja modificar a estos roles; aquí se usan
 // únicamente para ocultar los botones. La validación real la hace el servidor.
@@ -23,7 +24,6 @@ export default function Inventario() {
 
   // Datos del servidor
   const [inventario, setInventario] = useState([])
-  const [sucursal, setSucursal] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [mensaje, setMensaje] = useState('')
@@ -42,7 +42,6 @@ export default function Inventario() {
     try {
       const data = await api.inventario()
       setInventario(data.inventario)
-      setSucursal(data.sucursal)
     } catch (e) {
       setError(e.message)
     } finally {
@@ -78,10 +77,7 @@ export default function Inventario() {
   return (
     <div>
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
-        <div>
-          <h4 className="mb-0">Inventario</h4>
-          {sucursal?.nombre && <small className="text-muted">{sucursal.nombre}</small>}
-        </div>
+        <h2 className="fw-bold mb-0">Inventario</h2>
         <Button color="secondary" outline onClick={cargar} disabled={cargando}>
           <i className="bi bi-arrow-clockwise me-1" />
           Actualizar
@@ -162,45 +158,41 @@ export default function Inventario() {
             </Alert>
           )}
 
-          <Row className="g-2 mb-3 align-items-center">
-            <Col md={5}>
-              <Input
-                type="search"
-                placeholder="Buscar por nombre o código"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-              />
-            </Col>
-            <Col md={3}>
-              <Input
-                type="select"
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-              >
-                <option value="">Todos los tipos</option>
-                <option value="INGREDIENTE">Ingredientes</option>
-                <option value="PRODUCTO_DIRECTO">Reventa</option>
-              </Input>
-            </Col>
-            <Col md={4}>
-              <Input
-                id="solo-alertas"
-                type="checkbox"
-                className="me-2"
-                checked={soloAlertas}
-                onChange={(e) => setSoloAlertas(e.target.checked)}
-              />
-              <label htmlFor="solo-alertas">Solo con alerta de stock</label>
-            </Col>
-          </Row>
+          <div className="d-flex flex-wrap gap-2 mb-3">
+            <Input
+              type="search"
+              placeholder="Buscar por nombre o código..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              style={{ maxWidth: 280 }}
+            />
+            <GrupoFiltro
+              opciones={[
+                ['', 'Todos'],
+                ['INGREDIENTE', 'Ingredientes'],
+                ['PRODUCTO_DIRECTO', 'Reventa'],
+              ]}
+              valor={filtroTipo}
+              onChange={setFiltroTipo}
+            />
+            <GrupoFiltro
+              opciones={[
+                ['todo', 'Todo el stock'],
+                ['alertas', 'Con alerta'],
+              ]}
+              valor={soloAlertas ? 'alertas' : 'todo'}
+              onChange={(v) => setSoloAlertas(v === 'alertas')}
+            />
+          </div>
 
           {cargando ? (
             <div className="text-center py-5">
               <Spinner color="primary" />
             </div>
           ) : (
-            <Table responsive hover className="align-middle">
-              <thead>
+            <div className="table-responsive bg-white rounded shadow-sm">
+<Table hover className="mb-0 align-middle">
+              <thead className="table-light">
                 <tr>
                   <th>Código</th>
                   <th>Artículo</th>
@@ -263,6 +255,7 @@ export default function Inventario() {
                 })}
               </tbody>
             </Table>
+</div>
           )}
         </>
       )}

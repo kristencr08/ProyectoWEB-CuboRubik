@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
-import { Row, Col, Table, Badge, Button, Input, Alert, Spinner } from 'reactstrap'
+import { Table, Badge, Button, Input, Alert, Spinner } from 'reactstrap'
 import { api } from '../api/client'
 import ModalProveedor from '../components/proveedores/ModalProveedor'
+import GrupoFiltro from '../components/GrupoFiltro'
 
 // La ruta /proveedores solo la ven ADMINISTRADOR y GERENTE (utils/permisos.js),
 // y el backend exige el mismo rol, por eso aquí no hace falta ocultar botones.
@@ -57,10 +58,7 @@ export default function Proveedores() {
   return (
     <div>
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
-        <div>
-          <h4 className="mb-0">Proveedores</h4>
-          <small className="text-muted">{proveedores.length} registrados</small>
-        </div>
+        <h2 className="fw-bold mb-0">Proveedores</h2>
         <Button color="primary" onClick={() => setModal({ proveedor: null })}>
           <i className="bi bi-plus-lg me-1" />
           Nuevo proveedor
@@ -74,35 +72,33 @@ export default function Proveedores() {
         </Alert>
       )}
 
-      <Row className="g-2 mb-3">
-        <Col md={8}>
-          <Input
-            type="search"
-            placeholder="Buscar por nombre, documento o correo"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-        </Col>
-        <Col md={4}>
-          <Input
-            type="select"
-            value={filtroEstado}
-            onChange={(e) => setFiltroEstado(e.target.value)}
-          >
-            <option value="activos">Solo activos</option>
-            <option value="inactivos">Solo inactivos</option>
-            <option value="todos">Todos</option>
-          </Input>
-        </Col>
-      </Row>
+      <div className="d-flex flex-wrap gap-2 mb-3">
+        <Input
+          type="search"
+          placeholder="Buscar por nombre, documento o correo..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ maxWidth: 320 }}
+        />
+        <GrupoFiltro
+          opciones={[
+            ['activos', 'Activos'],
+            ['inactivos', 'Inactivos'],
+            ['todos', 'Todos'],
+          ]}
+          valor={filtroEstado}
+          onChange={setFiltroEstado}
+        />
+      </div>
 
       {cargando ? (
         <div className="text-center py-5">
           <Spinner color="primary" />
         </div>
       ) : (
-        <Table responsive hover className="align-middle">
-          <thead>
+        <div className="table-responsive bg-white rounded shadow-sm">
+<Table hover className="mb-0 align-middle">
+          <thead className="table-light">
             <tr>
               <th>Nombre</th>
               <th>Documento</th>
@@ -150,6 +146,7 @@ export default function Proveedores() {
             ))}
           </tbody>
         </Table>
+</div>
       )}
 
       {modal && (

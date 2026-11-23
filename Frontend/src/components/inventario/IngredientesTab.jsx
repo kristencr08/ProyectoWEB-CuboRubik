@@ -69,8 +69,9 @@ export default function IngredientesTab({ puedeGestionar, onCambio }) {
         </div>
       )}
 
-      <Table responsive hover className="align-middle">
-        <thead>
+      <div className="table-responsive bg-white rounded shadow-sm">
+<Table hover className="mb-0 align-middle">
+        <thead className="table-light">
           <tr>
             <th>Código</th>
             <th>Nombre</th>
@@ -120,6 +121,7 @@ export default function IngredientesTab({ puedeGestionar, onCambio }) {
           ))}
         </tbody>
       </Table>
+</div>
 
       {modal && (
         <ModalIngrediente
