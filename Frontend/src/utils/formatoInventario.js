@@ -1,7 +1,5 @@
 // Funciones y constantes de formato que comparten las pantallas de inventario.
-// (Si prefieres, puedes mover estas funciones a utils/formato.js del módulo 6.)
 
-// Las cantidades llegan del backend como texto ("12.500"), por eso se convierten a número.
 export const fmtCantidad = (n) =>
   Number(n ?? 0).toLocaleString('es-SV', { maximumFractionDigits: 3 })
 
@@ -16,6 +14,9 @@ export const fmtCosto = (n) =>
       })
 
 export const fmtFecha = (f) => (f ? new Date(f).toLocaleString('es-SV') : '—')
+
+// Solo la fecha, sin hora (por ejemplo, el vencimiento de una cuenta)
+export const fmtDia = (f) => (f ? new Date(f).toLocaleDateString('es-SV') : '—')
 
 // El backend maneja dos tipos de artículo: ingredientes y productos de reventa
 export const ETIQUETA_TIPO = {
@@ -34,4 +35,11 @@ export const COLOR_MOVIMIENTO = {
   ENTRADA: 'success',
   SALIDA: 'secondary',
   AJUSTE: 'info',
+}
+
+// Estados de una compra (el backend los llama PENDIENTE, RECIBIDA y ANULADA)
+export const ESTADO_COMPRA = {
+  PENDIENTE: { color: 'warning', texto: 'Pendiente' },
+  RECIBIDA: { color: 'success', texto: 'Recibida' },
+  ANULADA: { color: 'secondary', texto: 'Anulada' },
 }

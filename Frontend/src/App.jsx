@@ -12,6 +12,7 @@ import Proveedores from './pages/Proveedores'
 import Caja from './pages/Caja'
 import RRHH from './pages/RRHH'
 import Recetas from './pages/Recetas'
+import Compras from './pages/Compras'
 
 export default function App() {
   const { user } = useAuth()
@@ -33,7 +34,7 @@ export default function App() {
           <Route path="/caja" element={<Caja />} />
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/recetas" element={<Recetas />} />
-          <Route path="/compras" element={<Placeholder titulo="Compras" />} />
+          <Route path="/compras" element={<Compras />} />
           <Route path="/proveedores" element={<Proveedores />} />
           <Route path="/cuentas-por-pagar" element={<Placeholder titulo="Cuentas por pagar" />} />
           <Route path="/rrhh" element={<RRHH />} />

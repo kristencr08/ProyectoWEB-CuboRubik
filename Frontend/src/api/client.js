@@ -114,4 +114,12 @@ export const api = {
     request(`/recetas/${productoId}`, { method: 'PUT', body: datos }),
   estadoReceta: (productoId, activo) =>
     request(`/recetas/${productoId}/estado`, { method: 'PATCH', body: { activo } }),
+
+    // Compras
+  compras: (filtros) => request(`/compras${aQuery(filtros)}`),
+  compra: (id) => request(`/compras/${id}`),
+  crearCompra: (datos) => request('/compras', { method: 'POST', body: datos }),
+  recibirCompra: (id) => request(`/compras/${id}/recibir`, { method: 'POST' }),
+  anularCompra: (id, motivo) =>
+    request(`/compras/${id}/anular`, { method: 'PATCH', body: { motivo } }),
 }
