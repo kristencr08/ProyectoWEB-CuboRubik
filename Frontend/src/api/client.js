@@ -84,4 +84,11 @@ export const api = {
   crearProveedor: (datos) => request('/proveedores', { method: 'POST', body: datos }),
   actualizarProveedor: (id, datos) =>
     request(`/proveedores/${id}`, { method: 'PUT', body: datos }),
+
+  // Recetas
+  recetas: () => request('/recetas'),
+  guardarReceta: (productoId, datos) =>
+    request(`/recetas/${productoId}`, { method: 'PUT', body: datos }),
+  estadoReceta: (productoId, activo) =>
+    request(`/recetas/${productoId}/estado`, { method: 'PATCH', body: { activo } }),
 }
