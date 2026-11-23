@@ -78,4 +78,10 @@ export const api = {
   crearIngrediente: (datos) => request('/inventario/ingredientes', { method: 'POST', body: datos }),
   actualizarIngrediente: (id, datos) =>
     request(`/inventario/ingredientes/${id}`, { method: 'PUT', body: datos }),
+
+    // Proveedores
+  proveedores: () => request('/proveedores'),
+  crearProveedor: (datos) => request('/proveedores', { method: 'POST', body: datos }),
+  actualizarProveedor: (id, datos) =>
+    request(`/proveedores/${id}`, { method: 'PUT', body: datos }),
 }

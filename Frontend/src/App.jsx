@@ -8,6 +8,7 @@ import Placeholder from './pages/Placeholder'
 import { useAuth } from './context/AuthContext'
 import { rutaInicial } from './utils/permisos'
 import Inventario from './pages/Inventario'
+import Proveedores from './pages/Proveedores'
 
 export default function App() {
   const { user } = useAuth()
@@ -30,7 +31,7 @@ export default function App() {
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/recetas" element={<Placeholder titulo="Recetas y menú" />} />
           <Route path="/compras" element={<Placeholder titulo="Compras" />} />
-          <Route path="/proveedores" element={<Placeholder titulo="Proveedores" />} />
+          <Route path="/proveedores" element={<Proveedores />} />
           <Route path="/cuentas-por-pagar" element={<Placeholder titulo="Cuentas por pagar" />} />
           <Route path="/rrhh" element={<Placeholder titulo="Equipo y nómina" />} />
         </Route>
