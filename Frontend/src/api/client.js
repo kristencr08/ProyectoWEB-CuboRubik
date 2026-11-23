@@ -107,4 +107,11 @@ export const api = {
     request(`/nomina/planillas/${planillaId}/procesar`, { method: 'POST' }),
   pagarPlanilla: (planillaId) =>
     request(`/nomina/planillas/${planillaId}/pagar`, { method: 'PATCH' }),
+
+  // Recetas
+  recetas: () => request('/recetas'),
+  guardarReceta: (productoId, datos) =>
+    request(`/recetas/${productoId}`, { method: 'PUT', body: datos }),
+  estadoReceta: (productoId, activo) =>
+    request(`/recetas/${productoId}/estado`, { method: 'PATCH', body: { activo } }),
 }
