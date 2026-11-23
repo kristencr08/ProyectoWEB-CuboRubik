@@ -122,4 +122,11 @@ export const api = {
   recibirCompra: (id) => request(`/compras/${id}/recibir`, { method: 'POST' }),
   anularCompra: (id, motivo) =>
     request(`/compras/${id}/anular`, { method: 'PATCH', body: { motivo } }),
+
+    // Cuentas por pagar
+  cuentasPorPagar: (filtros) => request(`/cuentas-por-pagar${aQuery(filtros)}`),
+  resumenCuentas: () => request('/cuentas-por-pagar/resumen'),
+  cuentaPorPagar: (id) => request(`/cuentas-por-pagar/${id}`),
+  registrarPagoProveedor: (id, datos) =>
+    request(`/cuentas-por-pagar/${id}/pagos`, { method: 'POST', body: datos }),
 }

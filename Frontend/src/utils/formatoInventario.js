@@ -43,3 +43,20 @@ export const ESTADO_COMPRA = {
   RECIBIDA: { color: 'success', texto: 'Recibida' },
   ANULADA: { color: 'secondary', texto: 'Anulada' },
 }
+
+// Estados de una cuenta por pagar (PENDIENTE, PARCIAL o PAGADA)
+export const ESTADO_CXP = {
+  PENDIENTE: { color: 'warning', texto: 'Pendiente' },
+  PARCIAL: { color: 'info', texto: 'Pago parcial' },
+  PAGADA: { color: 'success', texto: 'Pagada' },
+}
+
+// Métodos con los que se le puede pagar a un proveedor (los mismos que valida el backend)
+export const METODOS_PAGO_PROVEEDOR = {
+  EFECTIVO: 'Efectivo',
+  TRANSFERENCIA: 'Transferencia',
+  CHEQUE: 'Cheque',
+  TARJETA: 'Tarjeta',
+  BITCOIN: 'Bitcoin',
+  CHIVO_WALLET: 'Chivo Wallet',
+}

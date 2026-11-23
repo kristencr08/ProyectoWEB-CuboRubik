@@ -13,6 +13,7 @@ import Caja from './pages/Caja'
 import RRHH from './pages/RRHH'
 import Recetas from './pages/Recetas'
 import Compras from './pages/Compras'
+import CuentasPorPagar from './pages/CuentasPorPagar'
 
 export default function App() {
   const { user } = useAuth()
@@ -36,7 +37,7 @@ export default function App() {
           <Route path="/recetas" element={<Recetas />} />
           <Route path="/compras" element={<Compras />} />
           <Route path="/proveedores" element={<Proveedores />} />
-          <Route path="/cuentas-por-pagar" element={<Placeholder titulo="Cuentas por pagar" />} />
+          <Route path="/cuentas-por-pagar" element={<CuentasPorPagar />} />
           <Route path="/rrhh" element={<RRHH />} />
         </Route>
       </Route>
