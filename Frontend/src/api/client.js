@@ -27,9 +27,26 @@ async function request(path, { method = 'GET', body } = {}) {
   }
 
   if (!res.ok || data.ok === false) {
-    throw new Error(data.mensaje || 'Error en la solicitud')
+    // Cuando falla una validación, el backend responde { ok: false, errores: [...] }
+    // sin "mensaje", así que se arma un texto con esa lista.
+    const detalle = Array.isArray(data.errores)
+      ? data.errores
+          .map((e) => (typeof e === 'string' ? e : e.mensaje || JSON.stringify(e)))
+          .join('. ')
+      : ''
+    throw new Error(data.mensaje || detalle || 'Error en la solicitud')
   }
   return data
+}
+
+// Convierte { tipo: 'X', desde: '' } en "?tipo=X", ignorando los valores vacíos
+function aQuery(filtros = {}) {
+  const params = new URLSearchParams()
+  Object.entries(filtros).forEach(([clave, valor]) => {
+    if (valor !== '' && valor !== null && valor !== undefined) params.append(clave, valor)
+  })
+  const texto = params.toString()
+  return texto ? `?${texto}` : ''
 }
 
 export const api = {
@@ -49,4 +66,16 @@ export const api = {
   // Facturas
   facturas: (tipo) => request(`/facturas${tipo ? `?tipo=${tipo}` : ''}`),
   factura: (id) => request(`/facturas/${id}`),
+
+  // Inventario
+  inventario: () => request('/inventario'),
+  alertasStock: () => request('/inventario/alertas'),
+  movimientos: (filtros) => request(`/inventario/movimientos${aQuery(filtros)}`),
+  definirStockMinimo: (datos) => request('/inventario/stock-minimo', { method: 'PUT', body: datos }),
+  registrarAjuste: (datos) => request('/inventario/ajustes', { method: 'POST', body: datos }),
+  unidades: () => request('/inventario/unidades'),
+  ingredientes: () => request('/inventario/ingredientes'),
+  crearIngrediente: (datos) => request('/inventario/ingredientes', { method: 'POST', body: datos }),
+  actualizarIngrediente: (id, datos) =>
+    request(`/inventario/ingredientes/${id}`, { method: 'PUT', body: datos }),
 }
