@@ -84,4 +84,14 @@ export const api = {
   crearProveedor: (datos) => request('/proveedores', { method: 'POST', body: datos }),
   actualizarProveedor: (id, datos) =>
     request(`/proveedores/${id}`, { method: 'PUT', body: datos }),
+
+  // Caja
+  contextoCaja: () => request('/caja/contexto'),
+  abrirCaja: (datos) => request('/caja/abrir', { method: 'POST', body: datos }),
+  movimientoCaja: (turnoId, datos) =>
+    request(`/caja/${turnoId}/movimientos`, { method: 'POST', body: datos }),
+  solicitarCierreCaja: (turnoId, datos) =>
+    request(`/caja/${turnoId}/solicitar-cierre`, { method: 'POST', body: datos }),
+  autorizarCierreCaja: (turnoId, datos = {}) =>
+    request(`/caja/${turnoId}/autorizar-cierre`, { method: 'POST', body: datos }),
 }
