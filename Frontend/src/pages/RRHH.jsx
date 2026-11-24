@@ -36,18 +36,28 @@ export default function RRHH() {
   const cargar = async () => {
     setCargando(true)
     setMensaje(null)
-    try {
-      const [empleadosData, planillasData] = await Promise.all([
-        api.empleados(sucursalId),
-        api.planillas(sucursalId),
-      ])
-      setEmpleados(empleadosData.empleados)
-      setPlanillas(planillasData.planillas)
-    } catch (error) {
-      setMensaje({ color: 'danger', texto: error.message })
-    } finally {
-      setCargando(false)
+    const [empleadosResult, planillasResult] = await Promise.allSettled([
+      api.empleados(sucursalId),
+      api.planillas(sucursalId),
+    ])
+    const errores = []
+
+    if (empleadosResult.status === 'fulfilled') {
+      setEmpleados(empleadosResult.value.empleados)
+    } else {
+      setEmpleados([])
+      errores.push(`Empleados: ${empleadosResult.reason.message}`)
     }
+
+    if (planillasResult.status === 'fulfilled') {
+      setPlanillas(planillasResult.value.planillas)
+    } else {
+      setPlanillas([])
+      errores.push(`Planillas: ${planillasResult.reason.message}`)
+    }
+
+    if (errores.length) setMensaje({ color: 'danger', texto: errores.join('. ') })
+    setCargando(false)
   }
 
   useEffect(() => {
