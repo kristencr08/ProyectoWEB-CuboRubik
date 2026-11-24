@@ -370,6 +370,30 @@ export default function RRHH() {
                   </tr>
                 </tbody>
               </Table>
+              <Table size="sm" borderless className="mb-0">
+                <tbody>
+                  <tr>
+                    <td>Deducción ISSS</td>
+                    <td className="text-end">{money(boleta.deduccion_isss)}</td>
+                  </tr>
+                  <tr>
+                    <td>Deducción AFP</td>
+                    <td className="text-end">{money(boleta.deduccion_afp)}</td>
+                  </tr>
+                  <tr>
+                    <td>Deducción ISR</td>
+                    <td className="text-end">{money(boleta.deduccion_isr)}</td>
+                  </tr>
+                  <tr className="table-light fw-semibold">
+                    <td>Total deducciones</td>
+                    <td className="text-end">{money(boleta.deducciones)}</td>
+                  </tr>
+                  <tr className="border-top fw-bold fs-5">
+                    <td>Salario neto</td>
+                    <td className="text-end">{money(boleta.salario_neto)}</td>
+                  </tr>
+                </tbody>
+              </Table>
             </div>
           </ModalBody>
         )}
