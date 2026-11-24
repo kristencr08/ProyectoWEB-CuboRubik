@@ -223,13 +223,26 @@ export default function RRHH() {
                 </div>
                 <div className="table-responsive">
                   <Table size="sm" className="align-middle">
-                    <thead><tr><th>Empleado</th><th className="text-end">Base</th><th className="text-end">ISSS</th><th className="text-end">AFP</th><th className="text-end">ISR</th><th className="text-end">Neto</th></tr></thead>
+                    <thead><tr><th>Empleado</th><th className="text-end">Base</th><th className="text-end">ISSS</th><th className="text-end">AFP</th><th className="text-end">ISR</th><th className="text-end">Neto</th><th /></tr></thead>
                     <tbody>
                       {detalle.detalles?.map((d) => (
                         <tr key={d.detalle_planilla_id}>
                           <td>{d.empleado}</td><td className="text-end">{money(d.salario_base)}</td>
                           <td className="text-end">{money(d.deduccion_isss)}</td><td className="text-end">{money(d.deduccion_afp)}</td>
                           <td className="text-end">{money(d.deduccion_isr)}</td><td className="text-end fw-bold">{money(d.salario_neto)}</td>
+                          <td className="text-end">
+                            <Button
+                              size="sm"
+                              color="secondary"
+                              outline
+                              disabled={detalle.estado !== 'PAGADA'}
+                              title={detalle.estado === 'PAGADA' ? 'Ver boleta' : 'Disponible cuando la planilla este pagada'}
+                              aria-label={`Ver boleta de ${d.empleado}`}
+                              onClick={() => setBoleta(d)}
+                            >
+                              <i className="bi bi-receipt me-1" />Boleta
+                            </Button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
