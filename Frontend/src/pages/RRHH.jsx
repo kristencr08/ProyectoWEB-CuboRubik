@@ -335,67 +335,77 @@ export default function RRHH() {
           Boleta de pago
         </ModalHeader>
         {boleta && (
-          <ModalBody>
-            <div className="comprobante boleta-nomina">
-              <div className="text-center border-bottom pb-3 mb-3">
-                <h4 className="mb-1">Restaurante Orígenes SV</h4>
-                <div className="text-muted">{detalle.sucursal}</div>
-                <strong>Boleta de pago de nómina</strong>
-              </div>
-              <div className="small">
-                <div><strong>Empleado:</strong> {boleta.empleado}</div>
-                <div><strong>Planilla:</strong> {detalle.nombre}</div>
-                <div>
-                  <strong>Período:</strong>{' '}
-                  {String(detalle.fecha_inicio).slice(0, 10)} - {String(detalle.fecha_fin).slice(0, 10)}
+          <>
+            <ModalBody>
+              <div className="comprobante boleta-nomina">
+                <div className="text-center border-bottom pb-3 mb-3">
+                  <h4 className="mb-1">Restaurante Orígenes SV</h4>
+                  <div className="text-muted">{detalle.sucursal}</div>
+                  <strong>Boleta de pago de nómina</strong>
                 </div>
-                <div><strong>Estado:</strong> {detalle.estado}</div>
+                <div className="small">
+                  <div><strong>Empleado:</strong> {boleta.empleado}</div>
+                  <div><strong>Planilla:</strong> {detalle.nombre}</div>
+                  <div>
+                    <strong>Período:</strong>{' '}
+                    {String(detalle.fecha_inicio).slice(0, 10)} - {String(detalle.fecha_fin).slice(0, 10)}
+                  </div>
+                  <div><strong>Estado:</strong> {detalle.estado}</div>
+                </div>
+                <hr className="my-3" />
+                <Table size="sm" borderless className="mb-0">
+                  <tbody>
+                    <tr>
+                      <td>Salario base</td>
+                      <td className="text-end">{money(boleta.salario_base)}</td>
+                    </tr>
+                    <tr>
+                      <td>Bonificaciones</td>
+                      <td className="text-end">{money(boleta.bonificaciones)}</td>
+                    </tr>
+                    <tr className="table-light fw-semibold">
+                      <td>Total ingresos</td>
+                      <td className="text-end">
+                        {money(Number(boleta.salario_base || 0) + Number(boleta.bonificaciones || 0))}
+                      </td>
+                    </tr>
+                  </tbody>
+                </Table>
+                <Table size="sm" borderless className="mb-0">
+                  <tbody>
+                    <tr>
+                      <td>Deducción ISSS</td>
+                      <td className="text-end">{money(boleta.deduccion_isss)}</td>
+                    </tr>
+                    <tr>
+                      <td>Deducción AFP</td>
+                      <td className="text-end">{money(boleta.deduccion_afp)}</td>
+                    </tr>
+                    <tr>
+                      <td>Deducción ISR</td>
+                      <td className="text-end">{money(boleta.deduccion_isr)}</td>
+                    </tr>
+                    <tr className="table-light fw-semibold">
+                      <td>Total deducciones</td>
+                      <td className="text-end">{money(boleta.deducciones)}</td>
+                    </tr>
+                    <tr className="border-top fw-bold fs-5">
+                      <td>Salario neto</td>
+                      <td className="text-end">{money(boleta.salario_neto)}</td>
+                    </tr>
+                  </tbody>
+                </Table>
               </div>
-              <hr className="my-3" />
-              <Table size="sm" borderless className="mb-0">
-                <tbody>
-                  <tr>
-                    <td>Salario base</td>
-                    <td className="text-end">{money(boleta.salario_base)}</td>
-                  </tr>
-                  <tr>
-                    <td>Bonificaciones</td>
-                    <td className="text-end">{money(boleta.bonificaciones)}</td>
-                  </tr>
-                  <tr className="table-light fw-semibold">
-                    <td>Total ingresos</td>
-                    <td className="text-end">
-                      {money(Number(boleta.salario_base || 0) + Number(boleta.bonificaciones || 0))}
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-              <Table size="sm" borderless className="mb-0">
-                <tbody>
-                  <tr>
-                    <td>Deducción ISSS</td>
-                    <td className="text-end">{money(boleta.deduccion_isss)}</td>
-                  </tr>
-                  <tr>
-                    <td>Deducción AFP</td>
-                    <td className="text-end">{money(boleta.deduccion_afp)}</td>
-                  </tr>
-                  <tr>
-                    <td>Deducción ISR</td>
-                    <td className="text-end">{money(boleta.deduccion_isr)}</td>
-                  </tr>
-                  <tr className="table-light fw-semibold">
-                    <td>Total deducciones</td>
-                    <td className="text-end">{money(boleta.deducciones)}</td>
-                  </tr>
-                  <tr className="border-top fw-bold fs-5">
-                    <td>Salario neto</td>
-                    <td className="text-end">{money(boleta.salario_neto)}</td>
-                  </tr>
-                </tbody>
-              </Table>
-            </div>
-          </ModalBody>
+            </ModalBody>
+            <ModalFooter className="no-print">
+              <Button color="secondary" outline onClick={() => setBoleta(null)}>
+                Cerrar
+              </Button>
+              <Button color="primary" onClick={() => window.print()}>
+                <i className="bi bi-printer me-1" />Imprimir boleta
+              </Button>
+            </ModalFooter>
+          </>
         )}
       </Modal>
     </div>

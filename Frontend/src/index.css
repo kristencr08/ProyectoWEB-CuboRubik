@@ -389,6 +389,11 @@ a {
 
 /*IMPRESIÓN DE COMPROBANTES*/
 
+.boleta-nomina {
+  color: #212529;
+  background: #fff;
+}
+
 @media print {
   body * {
     visibility: hidden;
@@ -404,6 +409,11 @@ a {
     left: 0;
     top: 0;
     width: 100%;
+  }
+
+  .boleta-nomina {
+    max-width: 720px;
+    margin: 0 auto;
   }
 
   .no-print {
