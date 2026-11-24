@@ -33,19 +33,36 @@ export default function Caja() {
   const cargar = async () => {
     setCargando(true)
     setMensaje(null)
-    try {
-      const [datos, actual] = await Promise.all([api.contextoCaja(), api.turnoActual()])
+    const [contextoResult, turnoResult] = await Promise.allSettled([
+      api.contextoCaja(),
+      api.turnoActual(),
+    ])
+    const errores = []
+
+    if (contextoResult.status === 'fulfilled') {
+      const datos = contextoResult.value
       setContexto(datos)
-      setTurnoActual(actual)
-      if (datos.cajeros.length && !apertura.cajeroId) {
+      if (datos.cajeros?.length && !apertura.cajeroId) {
         setApertura((prev) => ({ ...prev, cajeroId: String(datos.cajeros[0].usuario_id) }))
       }
-      if (actual.turno_id) setMovimiento((prev) => ({ ...prev, turnoId: String(actual.turno_id) }))
-    } catch (error) {
-      setMensaje({ color: 'danger', texto: error.message })
-    } finally {
-      setCargando(false)
+    } else {
+      setContexto(null)
+      const error = contextoResult.reason
+      errores.push(`Caja: ${error instanceof Error ? error.message : String(error)}`)
     }
+
+    if (turnoResult.status === 'fulfilled') {
+      const actual = turnoResult.value
+      setTurnoActual(actual)
+      if (actual.turno_id) setMovimiento((prev) => ({ ...prev, turnoId: String(actual.turno_id) }))
+    } else {
+      setTurnoActual(null)
+      const error = turnoResult.reason
+      errores.push(`Turno actual: ${error instanceof Error ? error.message : String(error)}`)
+    }
+
+    if (errores.length) setMensaje({ color: 'danger', texto: errores.join('. ') })
+    setCargando(false)
   }
 
   useEffect(() => { cargar() }, [])
