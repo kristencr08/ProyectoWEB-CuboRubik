@@ -24,6 +24,7 @@ export default function RRHH() {
   const [empleados, setEmpleados] = useState([])
   const [planillas, setPlanillas] = useState([])
   const [detalle, setDetalle] = useState(null)
+  const [boleta, setBoleta] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [enviando, setEnviando] = useState(false)
   const [mensaje, setMensaje] = useState(null)
@@ -314,6 +315,20 @@ export default function RRHH() {
             <Button color="primary" type="submit" disabled={enviando}>Crear</Button>
           </ModalFooter>
         </Form>
+      </Modal>
+
+      <Modal isOpen={Boolean(boleta)} toggle={() => setBoleta(null)} centered>
+        <ModalHeader className="no-print" toggle={() => setBoleta(null)}>
+          Boleta de pago
+        </ModalHeader>
+        {boleta && (
+          <ModalBody>
+            <div className="comprobante boleta-nomina">
+              <h4 className="text-center">Comprobante de pago</h4>
+              <div className="text-center">{boleta.empleado}</div>
+            </div>
+          </ModalBody>
+        )}
       </Modal>
     </div>
   )
