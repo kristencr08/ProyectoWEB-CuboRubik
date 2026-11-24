@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:setup": "node DB/setup.js"
   },
   "repository": {
     "type": "git",
@@ -17,5 +18,13 @@
   "bugs": {
     "url": "https://github.com/kristencr08/ProyectoWEB-CuboRubik/issues"
   },
-  "homepage": "https://github.com/kristencr08/ProyectoWEB-CuboRubik#readme"
+  "homepage": "https://github.com/kristencr08/ProyectoWEB-CuboRubik#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1"
+  }
 }
