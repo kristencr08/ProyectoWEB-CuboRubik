@@ -34,7 +34,10 @@ async function request(path, { method = 'GET', body } = {}) {
           .map((e) => (typeof e === 'string' ? e : e.mensaje || JSON.stringify(e)))
           .join('. ')
       : ''
-    throw new Error(data.mensaje || detalle || 'Error en la solicitud')
+    const errorHttp = res.status === 404
+      ? `No se encontro la ruta solicitada: ${path}`
+      : `Error HTTP ${res.status} al solicitar ${path}`
+    throw new Error(data.mensaje || detalle || errorHttp)
   }
   return data
 }
