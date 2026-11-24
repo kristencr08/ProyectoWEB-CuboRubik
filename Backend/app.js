@@ -12,6 +12,9 @@ const proveedoresRoutes = require('./routes/proveedoresRoutes');
 const comprasRoutes = require('./routes/comprasRoutes');
 const cuentasPagarRoutes = require('./routes/cuentasPagarRoutes');
 const recetasRoutes = require('./routes/recetasRoutes');
+const perfilRoutes = require('./routes/perfilRoutes');
+const clientesRoutes = require('./routes/clientesRoutes');
+const facturasRoutes = require('./routes/facturasRoutes');
 
 const app = express();
 
@@ -31,6 +34,9 @@ app.use('/api/recetas', recetasRoutes);
 app.use('/api/proveedores', proveedoresRoutes);
 app.use('/api/compras', comprasRoutes);
 app.use('/api/cuentas-por-pagar', cuentasPagarRoutes);
+app.use('/api/perfil', perfilRoutes);
+app.use('/api/clientes', clientesRoutes);
+app.use('/api/facturas', facturasRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
