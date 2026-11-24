@@ -351,6 +351,25 @@ export default function RRHH() {
                 </div>
                 <div><strong>Estado:</strong> {detalle.estado}</div>
               </div>
+              <hr className="my-3" />
+              <Table size="sm" borderless className="mb-0">
+                <tbody>
+                  <tr>
+                    <td>Salario base</td>
+                    <td className="text-end">{money(boleta.salario_base)}</td>
+                  </tr>
+                  <tr>
+                    <td>Bonificaciones</td>
+                    <td className="text-end">{money(boleta.bonificaciones)}</td>
+                  </tr>
+                  <tr className="table-light fw-semibold">
+                    <td>Total ingresos</td>
+                    <td className="text-end">
+                      {money(Number(boleta.salario_base || 0) + Number(boleta.bonificaciones || 0))}
+                    </td>
+                  </tr>
+                </tbody>
+              </Table>
             </div>
           </ModalBody>
         )}
