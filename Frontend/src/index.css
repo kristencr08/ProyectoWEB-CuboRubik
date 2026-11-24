@@ -1,0 +1,460 @@
+
+/*IDENTIDAD VISUAL ORÍGENES SV*/
+
+:root {
+  --verde: #214B3B;
+  --verde-oscuro: #193B2E;
+  --verde-claro: #E7EFE9;
+
+  --terracota: #B85C3B;
+  --dorado: #D0A451;
+
+  --crema: #F4EBDD;
+  --superficie: #FFFEFC;
+
+  --texto: #302B25;
+  --texto-secundario: #81776B;
+  --borde: #E4D9C8;
+
+  --sombra: 0 3px 12px rgba(48, 43, 37, 0.07);
+}
+
+/*ESTILOS GENERALES*/
+
+body {
+  background-color: var(--crema);
+  color: var(--texto);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--texto);
+}
+
+a {
+  color: var(--verde);
+}
+
+/*BOTONES*/
+
+.btn-warning {
+  --bs-btn-bg: var(--verde);
+  --bs-btn-border-color: var(--verde);
+  --bs-btn-color: #fff;
+
+  --bs-btn-hover-bg: var(--verde-oscuro);
+  --bs-btn-hover-border-color: var(--verde-oscuro);
+  --bs-btn-hover-color: #fff;
+
+  --bs-btn-active-bg: var(--verde-oscuro);
+  --bs-btn-active-border-color: var(--verde-oscuro);
+  --bs-btn-active-color: #fff;
+
+  --bs-btn-disabled-bg: var(--verde);
+  --bs-btn-disabled-border-color: var(--verde);
+  --bs-btn-disabled-color: #fff;
+}
+
+.btn-dark {
+  --bs-btn-bg: var(--verde);
+  --bs-btn-border-color: var(--verde);
+  --bs-btn-hover-bg: var(--verde-oscuro);
+  --bs-btn-hover-border-color: var(--verde-oscuro);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--verde);
+  --bs-btn-border-color: var(--borde);
+  --bs-btn-hover-bg: var(--verde-claro);
+  --bs-btn-hover-color: var(--verde);
+  --bs-btn-hover-border-color: var(--verde);
+}
+
+.form-control,
+.form-select {
+  border-color: var(--borde);
+  color: var(--texto);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--verde);
+  box-shadow: 0 0 0 0.2rem rgba(33, 75, 59, 0.12);
+}
+
+/*ESTRUCTURA GENERAL*/
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.contenido {
+  flex: 1;
+  min-width: 0;
+  background: var(--crema);
+}
+
+.contenido > main {
+  min-height: calc(100vh - 57px);
+  background: var(--crema);
+}
+
+/*BARRA SUPERIOR*/
+
+.topbar {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+  padding: 0.7rem 1.5rem;
+  min-height: 57px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-ruta {
+  min-width: 0;
+  color: var(--verde);
+}
+
+.topbar-ruta strong {
+  color: var(--texto);
+}
+
+.usuario-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.usuario-datos {
+  line-height: 1.3;
+  text-align: right;
+}
+
+/*BARRA LATERAL*/
+
+.sidebar {
+  background: var(--superficie);
+  border-right: 1px solid var(--borde);
+}
+
+/*Marca y logotipo*/
+
+.sidebar-marca {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.marca-imagen {
+  display: block;
+  width: 175px;
+  max-width: 100%;
+  height: 72px;
+  object-fit: contain;
+}
+
+/*Boton menu movil*/
+
+.btn-menu {
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--verde);
+  border-radius: 8px;
+  padding: 0.25rem 0.6rem;
+  font-size: 1.2rem;
+}
+
+.btn-menu:hover {
+  background: var(--verde-claro);
+}
+
+/*Cuerpo del menu*/
+
+.sidebar-cuerpo {
+  display: none;
+  flex-direction: column;
+  padding: 0.5rem 0.85rem 1rem;
+}
+
+.sidebar-cuerpo.abierto {
+  display: flex;
+}
+
+/*Grupos de navegacion*/
+
+.menu-grupo {
+  margin-bottom: 1rem;
+}
+
+.menu-titulo {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+  padding: 0.7rem 0.75rem 0.4rem;
+  font-weight: 700;
+}
+
+/*Enlaces del menu*/
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 9px;
+
+  color: var(--texto);
+  text-decoration: none;
+  font-size: 0.92rem;
+  margin-bottom: 3px;
+
+  transition: all 0.2s ease;
+}
+
+.menu-link i {
+  font-size: 1.05rem;
+  color: var(--verde);
+}
+
+.menu-link:hover {
+  background: var(--verde-claro);
+  color: var(--verde);
+}
+
+.menu-link.activo {
+  background: var(--verde-claro);
+  color: var(--verde);
+  font-weight: 700;
+}
+
+.menu-link.activo i {
+  color: var(--verde);
+}
+
+/*INFORMACION DEL USUARIO*/
+
+.usuario-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+
+  background: var(--verde-claro);
+  color: var(--verde);
+
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.usuario-nombre {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--texto);
+}
+
+.usuario-sucursal {
+  font-size: 0.75rem;
+  color: var(--texto-secundario);
+}
+
+.rol-badge {
+  background: var(--verde-claro) !important;
+  color: var(--verde) !important;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+/*TARJETAS Y CONTENIDO*/
+
+.card {
+  border-radius: 14px;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+}
+
+.producto-card {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1px solid var(--borde) !important;
+  background: var(--superficie);
+}
+
+.producto-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(33, 75, 59, 0.12) !important;
+  border-color: var(--verde-claro) !important;
+}
+
+.producto-card:active {
+  transform: scale(0.97);
+}
+
+.text-warning-emphasis {
+  color: var(--terracota) !important;
+}
+
+.fila-click {
+  cursor: pointer;
+}
+
+/*Tablas*/
+
+.table {
+  --bs-table-color: var(--texto);
+}
+
+.table thead th {
+  color: var(--verde);
+  font-weight: 700;
+  background: var(--verde-claro);
+  border-bottom-color: var(--borde);
+}
+
+/*MODALES Y ALERTAS*/
+
+.modal-content {
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+}
+
+.modal-header {
+  border-bottom-color: var(--borde);
+}
+
+.modal-footer {
+  border-top-color: var(--borde);
+}
+
+/*LOGIN*/
+
+.login-bg {
+  background: linear-gradient(
+    135deg,
+    var(--verde-oscuro),
+    var(--verde)
+  );
+}
+
+/*DISEÑO RESPONSIVE*/
+
+@media (min-width: 768px) {
+  .app-shell {
+    flex-direction: row;
+  }
+
+  .sidebar {
+    width: 260px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .sidebar-cuerpo {
+    display: flex;
+    height: calc(100vh - 82px);
+  }
+}
+
+@media (max-width: 767px) {
+  .topbar {
+    padding: 0.65rem 1rem;
+  }
+
+  .sidebar-marca {
+    justify-content: flex-start;
+  }
+
+  .marca-imagen {
+    width: 150px;
+  }
+}
+
+/*IMPRESIÓN DE COMPROBANTES*/
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .comprobante,
+  .comprobante * {
+    visibility: visible;
+  }
+
+  .comprobante {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+
+/*NUEVO DISEÑO DEL MENU LATERAL*/
+
+.sidebar {
+  background-color: #E7EFE9;
+  border-right: 1px solid #D1DED4;
+}
+
+/*Area del logotipo*/
+.sidebar-marca {
+  background-color: #E7EFE9;
+  border-bottom: 1px solid #D1DED4;
+}
+
+/*Titulos de las secciones*/
+.menu-titulo {
+  color: #527563;
+}
+
+/*Enlaces del menu*/
+.menu-link {
+  color: #214B3B;
+}
+
+/*Iconos*/
+.menu-link i {
+  color: #214B3B;
+}
+
+/*Efecto al pasar el cursor*/
+.menu-link:hover {
+  background-color: #D5E4D9;
+  color: #193B2E;
+}
+
+/*Apartado seleccionado*/
+.menu-link.activo {
+  background-color: #214B3B;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.menu-link.activo i {
+  color: #FFFFFF;
+}
+
+
