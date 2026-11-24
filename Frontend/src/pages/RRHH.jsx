@@ -337,8 +337,20 @@ export default function RRHH() {
         {boleta && (
           <ModalBody>
             <div className="comprobante boleta-nomina">
-              <h4 className="text-center">Comprobante de pago</h4>
-              <div className="text-center">{boleta.empleado}</div>
+              <div className="text-center border-bottom pb-3 mb-3">
+                <h4 className="mb-1">Restaurante Orígenes SV</h4>
+                <div className="text-muted">{detalle.sucursal}</div>
+                <strong>Boleta de pago de nómina</strong>
+              </div>
+              <div className="small">
+                <div><strong>Empleado:</strong> {boleta.empleado}</div>
+                <div><strong>Planilla:</strong> {detalle.nombre}</div>
+                <div>
+                  <strong>Período:</strong>{' '}
+                  {String(detalle.fecha_inicio).slice(0, 10)} - {String(detalle.fecha_fin).slice(0, 10)}
+                </div>
+                <div><strong>Estado:</strong> {detalle.estado}</div>
+              </div>
             </div>
           </ModalBody>
         )}
