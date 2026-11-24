@@ -3,6 +3,7 @@ const router = express.Router();
 const {
     registrarEmpleado,
     obtenerEmpleados,
+    obtenerPlanillas,
     crearPlanilla,
     generarDetallePlanilla,
     obtenerPlanilla,
@@ -11,6 +12,7 @@ const {
 } = require('../controllers/nominaController');
 
 const { verificarToken } = require('../middlewares/authMiddleware');
+const { permitirRoles } = require('../middlewares/rolMiddleware');
 
 
 // RUTAS DE EMPLEADOS
@@ -25,6 +27,12 @@ router.get(
 
 
 // RUTAS DE PLANILLAS
+router.get(
+    '/planillas/sucursal/:sucursalId',
+    verificarToken,
+    permitirRoles('ADMINISTRADOR', 'GERENTE'),
+    obtenerPlanillas
+);
 // Crear planilla quincenal
 router.post('/planillas', verificarToken, crearPlanilla);
 // Generar detalles y calcular deducciones

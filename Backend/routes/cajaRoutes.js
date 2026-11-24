@@ -3,6 +3,7 @@ const router = express.Router();
 
 // Importar los controladores de caja.
 const {
+  obtenerContextoCaja,
   aperturaCaja,
   movimientoCaja,
   solicitudCierreCaja,
@@ -10,9 +11,17 @@ const {
 } = require('../controllers/cajaController');
 // Importar middleware de autenticación.
 const { verificarToken } = require('../middlewares/authMiddleware');
+const { permitirRoles } = require('../middlewares/rolMiddleware');
 
 
 // RUTAS DE CAJA
+router.get(
+  '/contexto',
+  verificarToken,
+  permitirRoles('ADMINISTRADOR', 'GERENTE', 'CAJERO'),
+  obtenerContextoCaja
+);
+
 // Abrir caja y asignar cajero.
 router.post(
   '/abrir',

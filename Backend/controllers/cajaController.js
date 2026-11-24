@@ -1,4 +1,5 @@
 const {
+  obtenerContextoCaja: cargarContextoCaja,
   abrirCaja,
   registrarMovimiento,
   solicitarCierreCaja,
@@ -10,6 +11,19 @@ const {
   validarSolicitudCierre,
   validarAutorizacionCierre
 } = require('../validators/cajaValidation');
+
+const obtenerContextoCaja = async (req, res) => {
+  try {
+    const contexto = await cargarContextoCaja(req.usuario.id);
+    return res.status(200).json({ ok: true, ...contexto });
+  } catch (error) {
+    console.error('Error al obtener el contexto de caja:', error.message);
+    return res.status(error.status || 500).json({
+      ok: false,
+      mensaje: error.status ? error.message : 'Error al obtener el contexto de caja.'
+    });
+  }
+};
 
 
 
@@ -192,6 +206,7 @@ const autorizacionCierreCaja = async (req, res) => {
 
 // EXPORTAR CONTROLADORES
 module.exports = {
+  obtenerContextoCaja,
   aperturaCaja,
   movimientoCaja,
   solicitudCierreCaja,

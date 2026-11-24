@@ -1,4 +1,5 @@
 const pool = require('../../DB/db');
+const { obtenerSucursalUsuario } = require('./contextoService');
 
 
 // UTILIDADES
@@ -20,6 +21,65 @@ const validarUsuarioActivo = async (client, usuarioId, sucursalId, rolesPermitid
     [usuarioId, sucursalId, rolesPermitidos]
   );
   return resultado.rows[0] || null;
+};
+
+const obtenerContextoCaja = async (usuarioId) => {
+  const sucursal = await obtenerSucursalUsuario(pool, usuarioId);
+  const [cajas, cajeros, turnos] = await Promise.all([
+    pool.query(
+      `SELECT caja_id, nombre
+       FROM core.cajas
+       WHERE sucursal_id = $1
+         AND activo = TRUE
+       LIMIT 1`,
+      [sucursal.sucursal_id]
+    ),
+    pool.query(
+      `SELECT u.usuario_id, u.nombre
+       FROM core.usuarios u
+       JOIN core.roles r
+         ON r.rol_id = u.rol_id
+       WHERE u.sucursal_id = $1
+         AND u.activo = TRUE
+         AND r.activo = TRUE
+         AND r.nombre = 'CAJERO'
+       ORDER BY u.nombre`,
+      [sucursal.sucursal_id]
+    ),
+    pool.query(
+      `SELECT
+         t.turno_id,
+         t.estado,
+         t.tipo_turno,
+         t.efectivo_contado,
+         t.tarjeta_contada,
+         t.bitcoin_contado,
+         t.chivo_wallet_contado,
+         COALESCE(cajero.nombre, apertura.nombre) AS cajero
+       FROM core.turnos_caja t
+       JOIN core.cajas c
+         ON c.caja_id = t.caja_id
+       LEFT JOIN core.usuarios cajero
+         ON cajero.usuario_id = t.cajero_id
+       JOIN core.usuarios apertura
+         ON apertura.usuario_id = t.usuario_apertura
+       WHERE c.sucursal_id = $1
+         AND c.activo = TRUE
+         AND t.estado IN ('ABIERTO', 'PENDIENTE_CIERRE')
+       ORDER BY t.fecha_apertura DESC`,
+      [sucursal.sucursal_id]
+    )
+  ]);
+
+  return {
+    sucursal: {
+      id: Number(sucursal.sucursal_id),
+      nombre: sucursal.nombre
+    },
+    caja: cajas.rows[0] || null,
+    cajeros: cajeros.rows,
+    turnos: turnos.rows
+  };
 };
 
 
@@ -452,6 +512,7 @@ const autorizarCierreCaja = async ({
 
 // EXPORTAR FUNCIONES
 module.exports = {
+  obtenerContextoCaja,
   abrirCaja,
   registrarMovimiento,
   solicitarCierreCaja,

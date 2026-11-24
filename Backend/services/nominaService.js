@@ -337,6 +337,28 @@ const obtenerEmpleados = async (sucursalId) => {
   return resultado.rows;
 };
 
+const obtenerPlanillas = async (sucursalId) => {
+  const resultado = await pool.query(
+    `SELECT
+        p.planilla_id,
+        p.nombre,
+        p.fecha_inicio,
+        p.fecha_fin,
+        p.fecha_pago,
+        p.estado,
+        p.sucursal_id,
+        COUNT(d.detalle_planilla_id)::INTEGER AS cantidad_empleados
+     FROM core.planillas p
+     LEFT JOIN core.detalle_planillas d
+       ON d.planilla_id = p.planilla_id
+     WHERE p.sucursal_id = $1
+     GROUP BY p.planilla_id
+     ORDER BY p.fecha_inicio DESC, p.planilla_id DESC`,
+    [sucursalId]
+  );
+  return resultado.rows;
+};
+
 
 
 // 3. CREAR PLANILLA
@@ -671,6 +693,7 @@ const marcarPlanillaPagada = async (planillaId) => {
 module.exports = {
   registrarEmpleado,
   obtenerEmpleados,
+  obtenerPlanillas,
   crearPlanilla,
   generarDetallePlanilla,
   obtenerPlanilla,

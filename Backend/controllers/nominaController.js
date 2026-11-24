@@ -1,4 +1,6 @@
 const nominaService = require('../services/nominaService');
+const pool = require('../../DB/db');
+const { obtenerSucursalUsuario } = require('../services/contextoService');
 const {
     validarEmpleado,
     validarPlanilla,
@@ -110,6 +112,35 @@ const obtenerEmpleados = async (req, res) => {
             empleados
         });
 
+    } catch (error) {
+        return manejarError(res, error);
+    }
+};
+
+const obtenerPlanillas = async (req, res) => {
+    try {
+        const { sucursalId } = req.params;
+        if (!esIdValido(sucursalId)) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'El identificador de la sucursal no es válido.'
+            });
+        }
+
+        const sucursalUsuario = await obtenerSucursalUsuario(pool, req.usuario.id);
+        if (String(sucursalUsuario.sucursal_id) !== String(sucursalId)) {
+            return res.status(403).json({
+                ok: false,
+                mensaje: 'No puedes consultar planillas de otra sucursal.'
+            });
+        }
+
+        const planillas = await nominaService.obtenerPlanillas(sucursalId);
+        return res.status(200).json({
+            ok: true,
+            total: planillas.length,
+            planillas
+        });
     } catch (error) {
         return manejarError(res, error);
     }
@@ -267,6 +298,7 @@ const marcarPlanillaPagada = async (req, res) => {
 module.exports = {
     registrarEmpleado,
     obtenerEmpleados,
+    obtenerPlanillas,
     crearPlanilla,
     generarDetallePlanilla,
     obtenerPlanilla,
